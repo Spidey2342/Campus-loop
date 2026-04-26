@@ -1,8 +1,28 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import VideoInfo from '../layouts/VideoInfo';
 import ActionBar from '../layouts/ActionBar';
+import { Heart } from 'lucide-react';
+
 
 function VideoCard({video}) {
+
+    const [showHeart, setShowHeart] = useState(false);
+    let lastTap = 0;
+
+const handleTap = () => {
+  const now = Date.now();
+
+  if (now - lastTap < 300) {
+    // DOUBLE TAP DETECTED
+    setShowHeart(true);
+
+    setTimeout(() => {
+      setShowHeart(false);
+    }, 600);
+  }
+
+  lastTap = now;
+};
     const videoRef = useRef(null )
 
     useEffect(() => {
@@ -26,8 +46,21 @@ function VideoCard({video}) {
   };
 }, []);
 
+
+
   return (
-     <div className="relative h-full w-full bg-black">
+     <div className="relative h-full w-full bg-black"
+     onClick={handleTap}
+     >
+        {showHeart && (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+    <Heart
+      className="text-white animate-heart"
+      size={100}
+      fill="white"
+    />
+  </div>
+)}
       <video
         ref={videoRef}
         src={video.src}

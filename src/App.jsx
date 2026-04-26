@@ -4,6 +4,7 @@ import Welcome from './pages/Welcome'
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import Feedpage from './pages/Feedpage';
+import UploadPage from './pages/UploadPage';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/feed" element={<Feedpage/>} />
+        <Route path="/upload" element={<UploadPage/>} />
     
       </Routes>
     </BrowserRouter>
