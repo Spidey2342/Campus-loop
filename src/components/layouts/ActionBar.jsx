@@ -1,0 +1,54 @@
+import React from 'react'
+import { Heart, MessageCircle, Share2, Plus } from "lucide-react";
+import { useState } from "react";
+
+
+function ActionBar() {
+
+    const [liked, setLiked] = useState(false);
+    
+  return (
+    <div className="absolute bottom-24 right-3 flex flex-col items-center gap-5 text-white">
+      
+      {/* PROFILE + FOLLOW */}
+      <div className="relative">
+        <img
+          src="https://i.pravatar.cc/100"
+          alt="user"
+          className="w-12 h-12 rounded-full border-2 border-white"
+        />
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-teal-500 rounded-full p-1">
+          <Plus size={14} />
+        </div>
+      </div>
+
+      {/* LIKE */}
+      <button
+        onClick={() => setLiked(!liked)}
+        className="flex flex-col items-center"
+      >
+        <Heart
+          className={`transition transform ${
+            liked ? "text-red-500 scale-125" : ""
+          }`}
+          fill={liked ? "red" : "none"}
+        />
+        <span className="text-xs">84.2K</span>
+      </button>
+
+      {/* COMMENT */}
+      <div className="flex flex-col items-center">
+        <MessageCircle />
+        <span className="text-xs">1,348</span>
+      </div>
+
+      {/* SHARE */}
+      <div className="flex flex-col items-center">
+        <Share2 />
+        <span className="text-xs">Share</span>
+      </div>
+    </div>
+  )
+}
+
+export default ActionBar

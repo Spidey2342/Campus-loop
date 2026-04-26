@@ -1,0 +1,40 @@
+type Student @table {
+  username: String!
+  email: String!
+  passwordHash: String!
+  createdAt: Timestamp!
+  displayName: String
+  profilePictureUrl: String
+  bio: String
+}
+
+type Reel @table {
+  student: Student
+  videoUrl: String!
+  caption: String!
+  createdAt: Timestamp!
+  thumbnailUrl: String
+  location: String
+}
+
+type ChatGroup @table {
+  creator: Student
+  name: String!
+  createdAt: Timestamp!
+  description: String
+  groupPictureUrl: String
+}
+
+type ChatMessage @table {
+  sender: Student
+  recipient: Student
+  chatGroup: ChatGroup
+  content: String!
+  createdAt: Timestamp!
+}
+
+type GroupMembership @table(key: ["student", "chatGroup"]) {
+  student: Student!
+  chatGroup: ChatGroup!
+  joinedAt: Timestamp!
+}
