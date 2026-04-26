@@ -3,7 +3,9 @@ import { Home, Compass, Plus, MessageCircle, User } from "lucide-react";
 
 function BottomNav() {
   return (
-    <div className="absolute bottom-0 left-0 w-full bg-black/80 backdrop-blur-md py-3 flex justify-around items-center text-white z-50">
+    <div className="fixed bottom-0 left-0 w-full bg-black/80 backdrop-blur-md py-3 pb-safe flex justify-around items-center text-white z-50"
+    style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       
       <div className="flex flex-col items-center text-teal-400">
         <Home />
