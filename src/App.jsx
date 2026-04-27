@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Analytics } from '@vercel/analytics/react';
 import Welcome from './pages/Welcome'
 import SignUp from './pages/SignUp';
 import Login from './pages/Login';
@@ -17,6 +18,7 @@ function App() {
         <Route path="/upload" element={<UploadPage/>} />
     
       </Routes>
+      <Analytics />
     </BrowserRouter>
   )
 }
