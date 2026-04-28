@@ -1,17 +1,31 @@
-import React from 'react'
-import { Music } from 'lucide-react'
-import video3 from "../../assets/video1(1).mp4"
+import React, { useEffect, useState } from "react";
+import { Music } from "lucide-react";
+import video3 from "../../assets/video1(1).mp4";
 
+function VideoPreview({ file }) {
+  const [videoURL, setVideoURL] = useState(null);
 
-function VideoPreview() {
+  useEffect(() => {
+    if (!file) {
+      setVideoURL(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    setVideoURL(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
   return (
-     <div className="relative rounded-2xl overflow-hidden mb-4">
-      
+    <div className="relative rounded-2xl overflow-hidden mb-4">
+
       <video
-        src:video3
+        src={videoURL || video3} // 👈 IMPORTANT
         className="w-full h-[400px] object-cover"
         controls
         autoPlay
+        muted
         playsInline
       />
 
@@ -27,8 +41,9 @@ function VideoPreview() {
         <button className="bg-black/50 p-2 rounded">🎚</button>
         <button className="bg-black/50 p-2 rounded">CC</button>
       </div>
+
     </div>
-  )
+  );
 }
 
-export default VideoPreview
+export default VideoPreview;

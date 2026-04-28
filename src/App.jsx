@@ -5,7 +5,7 @@ import SignUp from './pages/SignUp';
 import Login from './pages/Login';
 import Feedpage from './pages/Feedpage';
 import UploadPage from './pages/UploadPage';
-import { Analytics } from "@vercel/analytics/next"
+
 
 function App() {
   return (
@@ -16,7 +16,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/feed" element={<Feedpage/>} />
         <Route path="/upload" element={<UploadPage/>} />
-    <Analytics/>
+   
       </Routes>
     </BrowserRouter>
   )
