@@ -52,7 +52,21 @@ function Profilepage() {
     </div>
   );
 
-  if (!profile) return null;
+  if (!profile) return (
+  <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4">
+    <p className="text-4xl">👤</p>
+    <p className="font-semibold">Profile not found</p>
+    <p className="text-gray-400 text-sm text-center px-8">
+      This account doesn't exist or may have been deleted.
+    </p>
+    <button
+      onClick={() => navigate("/feed")}
+      className="bg-teal-500 px-6 py-2 rounded-full text-black font-semibold text-sm"
+    >
+      Go to feed
+    </button>
+  </div>
+)
 
   return (
     <div className="min-h-screen bg-black text-white">
