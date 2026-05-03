@@ -72,23 +72,25 @@ function UploadPage() {
       <TopView />
 
       {/* File picker */}
-      <label className="flex items-center gap-2 mb-4 cursor-pointer bg-white/10 px-4 py-2 rounded-full w-fit text-sm text-gray-200 hover:bg-white/20">
-        📎 Choose video
-        <input type="file" accept="video/*" onChange={handleFile} className="hidden" />
-      </label>
-
-      {/* Video editor — only shows when file is selected */}
-      {videoFile ? (
-        <VideoEditor
-          file={videoFile}
-          onEditChange={setEditSettings}
-        />
-      ) : (
-        <div className="w-full h-48 bg-white/5 rounded-2xl flex flex-col items-center justify-center mb-4 border border-dashed border-white/20">
-          <p className="text-3xl mb-2">🎬</p>
-          <p className="text-gray-400 text-sm">Choose a video to get started</p>
-        </div>
-      )}
+      {/* Video container — file picker is INSIDE it when no video selected */}
+{videoFile ? (
+  <VideoEditor
+    file={videoFile}
+    onEditChange={setEditSettings}
+  />
+) : (
+  <label className="w-full h-56 bg-white/5 rounded-2xl flex flex-col items-center justify-center mb-4 border border-dashed border-white/20 cursor-pointer hover:bg-white/10 transition-all">
+    <p className="text-4xl mb-3">🎬</p>
+    <p className="text-white font-semibold text-sm mb-1">Tap to choose a video</p>
+    <p className="text-gray-500 text-xs">MP4, MOV up to 100MB</p>
+    <input
+      type="file"
+      accept="video/*"
+      onChange={handleFile}
+      className="hidden"
+    />
+  </label>
+)}
 
       {/* Caption */}
       <div className="bg-white/10 rounded-xl p-4 mb-4">
