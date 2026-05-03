@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import VideoCard from '../components/video/VideoCard'
 
-const BASE_URL = "http://localhost:8000"
+const BASE_URL = "https://campus-backend-moz5.onrender.com"
 
 function ReelPage() {
   const { reelId } = useParams()
@@ -40,7 +40,6 @@ function ReelPage() {
 
   return (
     <div className="h-screen bg-black">
-      {/* Back button */}
       <button
         onClick={() => navigate(-1)}
         className="absolute top-4 left-4 z-50 text-white bg-black/40 rounded-full p-2"

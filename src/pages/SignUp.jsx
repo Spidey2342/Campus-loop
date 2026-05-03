@@ -23,45 +23,40 @@ function SignUp() {
   };
 
   const handleSignup = async () => {
-    // Clear any previous errors
-    setError("");
+  setError("")
 
-    // Basic validation before hitting the server
-    if (!form.username || !form.email || !form.password) {
-      setError("Please fill in all fields");
-      return;
-    }
+  if (!form.username || !form.email || !form.password) {
+    setError("Please fill in all fields")
+    return
+  }
 
-    setLoading(true); // show loading state on button
+  // Clean username — remove @ and replace spaces with underscores
+  const cleanUsername = form.username
+    .replace("@", "")
+    .replace(/\s+/g, "_")
+    .replace(/[^a-zA-Z0-9._]/g, "") // remove any other special characters
 
-    try {
-      // Call our Python backend
-      // We map "school" from your form to "school_name" that the API expects
-      const data = await registerUser({
-        full_name: form.username,  // using username as full name for now
-        username: form.username.replace("@", ""), // strip @ if they typed it
-        email: form.email,
-        password: form.password,
-        school_name: form.school,
-      });
+  setLoading(true)
 
-      // data = { access_token, token_type, user }
-      // Store the token in localStorage so we can use it later
-      // This is like saving the wristband after entering the event
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+  try {
+    const data = await registerUser({
+      full_name: form.username,
+      username: cleanUsername,  // 👈 use cleaned username
+      email: form.email,
+      password: form.password,
+      school_name: form.school,
+    })
 
-      // Success — go to feed
-      navigate("/feed");
+    localStorage.setItem("token", data.access_token)
+    localStorage.setItem("user", JSON.stringify(data.user))
+    navigate("/feed")
 
-    } catch (err) {
-      // Show the error message from the server
-      setError(err.message);
-    } finally {
-      // Always stop loading whether it succeeded or failed
-      setLoading(false);
-    }
-  };
+  } catch (err) {
+    setError(err.message)
+  } finally {
+    setLoading(false)
+  }
+}
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-black via-gray-900 to-teal-900 text-white flex flex-col items-center justify-between px-2 py-8'>
