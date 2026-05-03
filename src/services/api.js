@@ -211,3 +211,20 @@ export const getReelsByCategory = async (category, token) => {
   if (!response || !response.ok) throw new Error("Failed to load category")
   return response.json()
 }
+export const getSchoolDetail = async (schoolName, token) => {
+  const response = await authFetch(
+    `${BASE_URL}/discover/school/${encodeURIComponent(schoolName)}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!response || !response.ok) throw new Error("Failed to load school")
+  return response.json()
+}
+
+export const getReelsByHashtag = async (tag, token) => {
+  const response = await authFetch(
+    `${BASE_URL}/discover/hashtag/${encodeURIComponent(tag)}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!response || !response.ok) throw new Error("Failed to load hashtag reels")
+  return response.json()
+}
