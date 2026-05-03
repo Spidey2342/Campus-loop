@@ -66,7 +66,7 @@ const [isDeleting, setIsDeleting] = useState(false)
           onClick={() => navigate(`/profile/${reel.owner_username}`)}
         >
           <img
-            src={reel.owner_avatar || "https://i.pravatar.cc/100"}
+            src={reel.owner_avatar}
             className="w-12 h-12 rounded-full border-2 border-white object-cover"
           />
           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-teal-500 rounded-full p-1">
