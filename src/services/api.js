@@ -1,5 +1,5 @@
 // The base URL of your Python backend
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+const BASE_URL ="https://campus-backend-moz5.onrender.com"
 
 const authFetch = async (url, options = {}) => {
   const response = await fetch(url, options)
