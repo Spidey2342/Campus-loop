@@ -74,7 +74,7 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end" onClick={onClose}>
+    <div className="fixed inset-0 z-200 flex items-end" onClick={onClose}>
       <div
         className="w-full bg-gray-900 rounded-t-2xl max-h-[75vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
