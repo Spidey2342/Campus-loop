@@ -15,20 +15,23 @@ function VideoFeed({ feedType }) {
       const currentSkip = reset ? 0 : skip
       const data = await getFeed(token, feedType, currentSkip)
 
-      if (data.length < 10) setHasMore(false)
+      // Safety check — ensure data is always an array
+      const safeData = Array.isArray(data) ? data : []
 
-      // reset = switching tabs, so replace reels
-      // otherwise append for infinite scroll
-      setReels(prev => reset ? data : [...prev, ...data])
-      setSkip(currentSkip + data.length)
+      if (safeData.length < 10) setHasMore(false)
+
+      setReels(prev => reset ? safeData : [...prev, ...safeData])
+      setSkip(currentSkip + safeData.length)
 
     } catch (err) {
-      console.error(err)
+      console.error("Feed error:", err)
+      // Don't crash — just show empty state
+      if (reset) setReels([])
     } finally {
       setLoading(false)
     }
   }, [feedType, token])
-
+  
   // Reload when feed type changes (For You ↔ Following)
   useEffect(() => {
     setSkip(0)
