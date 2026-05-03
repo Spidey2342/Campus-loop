@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Music } from "lucide-react";
+import { Music, Scissors, Edit, Captions } from "lucide-react";
 import video3 from "../../assets/video1(1).mp4";
 
 function VideoPreview({ file }) {
@@ -21,8 +21,8 @@ function VideoPreview({ file }) {
     <div className="relative rounded-2xl overflow-hidden mb-4">
 
       <video
-        src={videoURL || video3} // 👈 IMPORTANT
-        className="w-full h-[400px] object-cover"
+        src={videoURL} // 👈 IMPORTANT
+        className="w-full m-h-[60vh] object-cover"
         controls
         autoPlay
         muted
@@ -30,16 +30,16 @@ function VideoPreview({ file }) {
       />
 
       {/* ADD MUSIC */}
-      <button className="absolute top-4 left-1/2 -translate-x-1/2 bg-teal-500/80 px-4 py-2 rounded-full flex items-center gap-2">
+      <button className="absolute bottom-16 left-1/2 -translate-x-1/2 bg-teal-500/80 px-4 py-2 rounded-full flex items-center gap-2 z-20">
         <Music size={16} />
         Add Music
       </button>
 
       {/* SIDE CONTROLS */}
-      <div className="absolute right-2 top-1/3 flex flex-col gap-3">
-        <button className="bg-black/50 p-2 rounded">✂</button>
-        <button className="bg-black/50 p-2 rounded">🎚</button>
-        <button className="bg-black/50 p-2 rounded">CC</button>
+      <div className=" min-w-0 absolute right-3 top-1/3 flex flex-col gap-3 z-10">
+        <button className="bg-black/50 p-2 rounded"> <Scissors size={20} /> </button>
+        <button className="bg-black/50 p-2 rounded"> <Edit size={20} /> </button>
+        <button className="bg-black/50 p-2 rounded"> <Captions size={20} /> </button>
       </div>
 
     </div>

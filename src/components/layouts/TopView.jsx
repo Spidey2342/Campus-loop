@@ -11,11 +11,7 @@ function TopView() {
       onClick={() => navigate("/feed")}
       >Cancel</button>
 
-      <h2 className="font-semibold text-lg">New Post</h2>
-
-      <button className="bg-teal-500 px-4 py-2 rounded-full flex items-center gap-2 text-black">
-        Post <Send size={16} />
-      </button>
+     
     </div>
   )
 }

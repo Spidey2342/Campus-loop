@@ -26,7 +26,7 @@ const handleSave = () => {
       <textarea
         placeholder="Write a caption..."
         value={text}
-        onChange={(e) => setText(e.target.value)}
+       onChange={(e) => setCaption(e.target.value)}
         maxLength={150}
         className="w-full bg-transparent outline-none resize-none"
       />

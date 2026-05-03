@@ -1,0 +1,213 @@
+// The base URL of your Python backend
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+
+const authFetch = async (url, options = {}) => {
+  const response = await fetch(url, options)
+
+  if (response.status === 401) {
+    localStorage.clear()
+    window.location.href = "/login"
+    return
+  }
+
+  // 429 = Too Many Requests
+  if (response.status === 429) {
+    throw new Error("You're doing that too fast. Please slow down.")
+  }
+
+  return response
+}
+
+// --- AUTH ---
+
+export const registerUser = async (formData) => {
+  const response = await fetch(`${BASE_URL}/auth/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    // JSON.stringify converts your JS object to a JSON string
+    // that Python can read
+    body: JSON.stringify(formData),
+  });
+
+  // If the server returns an error (400, 422, etc)
+  // we extract the error message and throw it
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Registration failed");
+  }
+
+  // Returns { access_token, token_type, user }
+  return response.json();
+};
+
+export const loginUser = async (formData) => {
+  const response = await fetch(`${BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Login failed");
+  }
+
+  return response.json();
+};
+
+export const getCurrentUser = async (token) => {
+  const response = await fetch(`${BASE_URL}/auth/me`, {
+    method: "GET",
+    headers: {
+      // This is how we send the JWT token with every request
+      // "Bearer" is the standard prefix for JWT tokens
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Session expired, please log in again");
+  }
+
+  return response.json();
+};
+
+// --- PROFILE ---
+
+export const getProfile = async (username, token) => {
+  const response = await fetch(`${BASE_URL}/users/profile/${username}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to load profile");
+  return response.json();
+};
+
+export const getUserReels = async (username, token) => {
+  const response = await fetch(`${BASE_URL}/users/profile/${username}/reels`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to load reels");
+  return response.json();
+};
+
+export const editProfile = async (formData, token) => {
+  const response = await fetch(`${BASE_URL}/users/profile/edit`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+    // Note: no Content-Type header here — browser sets it automatically
+    // for FormData (needed for file uploads)
+    body: formData,
+  });
+  if (!response.ok) throw new Error("Failed to update profile");
+  return response.json();
+};
+
+export const followUser = async (username, token) => {
+  const response = await fetch(`${BASE_URL}/users/follow/${username}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to follow user");
+  return response.json();
+};
+// --- REELS ---
+
+export const uploadReel = async (formData, token) => {
+  const response = await fetch(`${BASE_URL}/reels/upload`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData, // FormData handles video + text together
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Upload failed");
+  }
+  return response.json();
+};
+
+export const getFeed = async (token, type = "foryou", skip = 0) => {
+  const response = await authFetch(
+    `${BASE_URL}/reels/feed?type=${type}&skip=${skip}&limit=10`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!response.ok) throw new Error("Failed to load feed")
+  return response.json()
+}
+
+export const likeReel = async (reelId, token) => {
+  const response = await fetch(`${BASE_URL}/reels/${reelId}/like`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to like reel");
+  return response.json();
+};
+
+export const commentOnReel = async (reelId, text, token) => {
+  const response = await fetch(`${BASE_URL}/reels/${reelId}/comment`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ text }),
+  });
+  if (!response.ok) throw new Error("Failed to post comment");
+  return response.json();
+};
+
+export const viewReel = async (reelId, token) => {
+  await fetch(`${BASE_URL}/reels/${reelId}/view`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const deleteReel = async (reelId, token) => {
+  const response = await authFetch(`${BASE_URL}/reels/${reelId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response || !response.ok) throw new Error("Failed to delete reel");
+  return response.json();
+};
+
+// --- DISCOVER ---
+
+export const searchAll = async (query, token) => {
+  const response = await authFetch(
+    `${BASE_URL}/discover/search?q=${encodeURIComponent(query)}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!response || !response.ok) throw new Error("Search failed")
+  return response.json()
+}
+
+export const getTopSchools = async (token) => {
+  const response = await authFetch(`${BASE_URL}/discover/schools`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Failed to load schools")
+  return response.json()
+}
+
+export const getTrendingTags = async (token) => {
+  const response = await authFetch(`${BASE_URL}/discover/trending`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Failed to load trending")
+  return response.json()
+}
+
+export const getReelsByCategory = async (category, token) => {
+  const response = await authFetch(
+    `${BASE_URL}/discover/reels/category/${category}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!response || !response.ok) throw new Error("Failed to load category")
+  return response.json()
+}

@@ -5,7 +5,7 @@ function Audience() {
       <div className="bg-white/10 rounded-xl p-4 mb-4 flex items-center justify-between">
       
       <div>
-        <p className="text-sm text-gray-400">Posting to</p>
+        <p className="text-sm text-gray-400">Posting from</p>
         <p className="font-semibold">Stanford University</p>
       </div>
 

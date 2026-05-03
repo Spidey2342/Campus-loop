@@ -2,14 +2,10 @@ import React from 'react'
 import { useState } from 'react';
 import { Video } from 'lucide-react'
 import { useNavigate } from "react-router-dom";
-
-// import { auth, db } from "../services/firebase";
-// import { createUserWithEmailAndPassword } from "firebase/auth";
-// import { doc, setDoc } from "firebase/firestore";
-
+import { registerUser } from '../services/api'; // 👈 add this
 
 function SignUp() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     username: "",
@@ -18,91 +14,136 @@ function SignUp() {
     password: "",
   });
 
+  // Add these two new state variables
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-   const handleSignup = async () => {
-   
 
+  const handleSignup = async () => {
+    // Clear any previous errors
+    setError("");
+
+    // Basic validation before hitting the server
+    if (!form.username || !form.email || !form.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true); // show loading state on button
+
+    try {
+      // Call our Python backend
+      // We map "school" from your form to "school_name" that the API expects
+      const data = await registerUser({
+        full_name: form.username,  // using username as full name for now
+        username: form.username.replace("@", ""), // strip @ if they typed it
+        email: form.email,
+        password: form.password,
+        school_name: form.school,
+      });
+
+      // data = { access_token, token_type, user }
+      // Store the token in localStorage so we can use it later
+      // This is like saving the wristband after entering the event
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Success — go to feed
       navigate("/feed");
 
+    } catch (err) {
+      // Show the error message from the server
+      setError(err.message);
+    } finally {
+      // Always stop loading whether it succeeded or failed
+      setLoading(false);
+    }
   };
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-black via-gray-900 to-teal-900 text-white flex flex-col items-center justify-between px-2 py-8'>
 
-{/* Header */}
-<div
-className='mt-4'>
-    <div className='bg-white/20 backdrop-blur-md px-5 py-2 rounded-full text-sm flex items-center gap-2'>
-     <Video /> <span className="font-medium">CampusReel</span>
-   
-    </div>
-</div>
+      {/* Header */}
+      <div className='mt-4'>
+        <div className='bg-white/20 backdrop-blur-md px-5 py-2 rounded-full text-sm flex items-center gap-2'>
+          <Video /> <span className="font-medium">CampusReel</span>
+        </div>
+      </div>
 
-  <h1 className="text-3xl font-bold mb-2">Join the Reel</h1>
+      <h1 className="text-3xl font-bold mb-2">Join the Reel</h1>
       <p className="text-gray-400 mb-6 text-center px-1.5">
         Create your account and connect with your campus
       </p>
 
-{/* forms */}
+      {/* forms */}
+      <div className='w-full bg-white/10 max-w-md space-y-4 flex flex-col justify-center items-center rounded-2xl border-1 border-white/30 align-middle px-1.5'>
 
-<div className='w-full bg-white/10  max-w-md space-y-4 flex flex-col justify-center items-center rounded-2xl border-1 border-white/30 align-middle px-1.5'>
-   
+        <div className='w-[95%] mt-6'>
+          <p className='font-small text-white/70 text-sm'>USERNAME:</p>
+          <input
+            type="text"
+            name='username'
+            placeholder='@your_handle'
+            onChange={handleChange}
+            className='w-full p-4 rounded-xl bg-white/10 outline-none' />
+        </div>
 
-<div className='w-[95%] mt-6'>
-    <p className='font-small text-white/70 text-sm'>USERNAME:</p>
-     <input 
-    type="text"
-    name='username'
-    placeholder='@your_handle'
-    onChange={handleChange}
-    className='w-full p-4 rounded-xl bg-white/10 outline-none' />
-</div>
+        <div className='w-[95%]'>
+          <p className='font-small text-white/70 text-sm'>SCHOOL:</p>
+          <input
+            type="text"
+            name="school"
+            placeholder="Your School"
+            onChange={handleChange}
+            className="w-full p-4 rounded-xl bg-white/10 outline-none"
+          />
+        </div>
 
-<div className='w-[95%]'>
-   <p className='font-small text-white/70 text-sm'>SCHOOL:</p>
-   <input
-          type="text"
-          name="school"
-          placeholder="Your School"
-          onChange={handleChange}
-          className="w-full p-4 rounded-xl bg-white/10 outline-none"
-        />
+        <div className='w-[95%]'>
+          <p className='font-small text-white/70 text-sm'>EMAIL:</p>
+          <input
+            type="email"
+            name="email"
+            placeholder="you@school.edu"
+            onChange={handleChange}
+            className="w-full p-4 rounded-xl bg-white/10 outline-none"
+          />
+        </div>
 
-</div>
-<div className='w-[95%]'>
-       <p className='font-small text-white/70 text-sm'>EMAIL:</p>
-        <input
-          type="email"
-          name="email"
-          placeholder="you@school.edu"
-          onChange={handleChange}
-          className="w-full p-4 rounded-xl bg-white/10 outline-none"
-        />
+        <div className='w-[95%]'>
+          <p className='font-small text-white/70 text-sm'>PASSWORD:</p>
+          <input
+            type="password"
+            name="password"
+            placeholder="Create password"
+            onChange={handleChange}
+            className="w-full p-4 rounded-xl bg-white/10 outline-none"
+          />
+        </div>
 
-</div>
-<div className='w-[95%]'>
-       <p className='font-small text-white/70 text-sm'>PASSWORD:</p>
-            <input
-          type="password"
-          name="password"
-          placeholder="Create password"
-          onChange={handleChange}
-          className="w-full p-4 rounded-xl bg-white/10 outline-none"
-        />
+        {/* Show error message if something goes wrong */}
+        {error && (
+          <div className="w-[95%] bg-red-500/20 border border-red-500/50 text-red-300 text-sm px-4 py-3 rounded-xl">
+            {error}
+          </div>
+        )}
 
-</div>
-    
-   <button
+        <button
           onClick={handleSignup}
-          className="w-full bg-teal-600 hover:bg-teal-500 py-4 rounded-2xl font-semibold mb-4"
+          disabled={loading}
+          className="w-full bg-teal-600 hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed py-4 rounded-2xl font-semibold mb-4 transition-all"
         >
-          Sign Up →
+          {/* Button text changes based on loading state */}
+          {loading ? "Creating account..." : "Sign Up →"}
         </button>
-</div>
 
-{/* login */}
- <p className="text-gray-400 mt-6">
+      </div>
+
+      {/* login */}
+      <p className="text-gray-400 mt-6">
         Already have an account?{" "}
         <span
           onClick={() => navigate("/login")}
@@ -111,9 +152,6 @@ className='mt-4'>
           Log In
         </span>
       </p>
-
-
-
 
     </div>
   )

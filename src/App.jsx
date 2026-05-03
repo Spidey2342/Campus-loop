@@ -1,24 +1,53 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Welcome from './pages/Welcome'
-import SignUp from './pages/SignUp';
-import Login from './pages/Login';
-import Feedpage from './pages/Feedpage';
-import UploadPage from './pages/UploadPage';
+import { Routes, Route } from 'react-router-dom'
+import ProtectedRoute from './components/layouts/ProtectedRoute'
+import PublicRoute from './components/layouts/PublicRoute'
 
+// Pages
+import Login from './pages/Login'
+import SignUp from './pages/SignUp'
+import Feedpage from './pages/Feedpage'
+import UploadPage from './pages/UploadPage'
+import Profilepage from './pages/Profilepage'
+import DiscoverPage from './pages/DiscoverPage'
+import ReelPage from './pages/ReelPage'
 
 function App() {
   return (
-    <BrowserRouter>
-        <Routes>
-     <Route path="/" element={<Welcome />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/feed" element={<Feedpage/>} />
-        <Route path="/upload" element={<UploadPage/>} />
-   
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+
+      {/* Public routes — logged in users get redirected to feed */}
+      <Route path="/" element={
+        <PublicRoute><Login /></PublicRoute>
+      } />
+      <Route path="/login" element={
+        <PublicRoute><Login /></PublicRoute>
+      } />
+      <Route path="/signup" element={
+        <PublicRoute><SignUp /></PublicRoute>
+      } />
+
+      {/* Protected routes — logged out users get redirected to login */}
+      <Route path="/feed" element={
+        <ProtectedRoute><Feedpage /></ProtectedRoute>
+      } />
+      <Route path="/upload" element={
+        <ProtectedRoute><UploadPage /></ProtectedRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedRoute><Profilepage /></ProtectedRoute>
+      } />
+      <Route path="/profile/:username" element={
+        <ProtectedRoute><Profilepage /></ProtectedRoute>
+      } />
+      <Route path="/discover" element={
+        <ProtectedRoute><DiscoverPage /></ProtectedRoute>
+      } />
+      <Route path="/reel/:reelId" element={
+        <ProtectedRoute><ReelPage /></ProtectedRoute>
+      } />
+
+    </Routes>
   )
 }
 
