@@ -70,7 +70,7 @@ function VideoCard({ reel, onDelete }) {
         src={reel.video_url}
         loop
         playsInline
-        muted
+     
         className="h-full w-full object-cover"
       />
 
