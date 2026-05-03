@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from 'react'
 import { X, Send } from 'lucide-react'
 import { commentOnReel } from '../../services/api'
 
-const BASE_URL = "http://localhost:8000"
+// ✅ uses environment variable instead of hardcoded localhost
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
   const [comments, setComments] = useState([])
@@ -12,7 +13,6 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
   const inputRef = useRef(null)
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
 
-  // Load comments when drawer opens
   useEffect(() => {
     const loadComments = async () => {
       try {
@@ -20,17 +20,26 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
           `${BASE_URL}/reels/${reel.id}/comments`,
           { headers: { Authorization: `Bearer ${token}` } }
         )
+
+        // Safety check — make sure response is ok before parsing
+        if (!response.ok) {
+          setComments([])
+          return
+        }
+
         const data = await response.json()
-        setComments(data)
+        // Safety check — make sure data is an array
+        setComments(Array.isArray(data) ? data : [])
+
       } catch (err) {
         console.error(err)
+        setComments([])
       } finally {
         setLoading(false)
       }
     }
-    loadComments()
 
-    // Auto focus the input when drawer opens
+    loadComments()
     setTimeout(() => inputRef.current?.focus(), 300)
   }, [reel.id])
 
@@ -40,15 +49,11 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
 
     try {
       const newComment = await commentOnReel(reel.id, text, token)
-
-      // Add comment to list immediately without refetching
-      // This pattern is called "optimistic update"
       setComments(prev => [{
         ...newComment,
         username: currentUser.username,
         avatar_url: currentUser.avatar_url,
       }, ...prev])
-
       setText("")
       onCommentAdded()
     } catch (err) {
@@ -69,17 +74,11 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
   }
 
   return (
-    // Dark overlay — tap outside to close
-    <div
-      className="fixed inset-0 z-100 flex items-end"
-      onClick={onClose}
-    >
-      {/* Drawer panel — stop clicks from bubbling to overlay */}
+    <div className="fixed inset-0 z-50 flex items-end" onClick={onClose}>
       <div
         className="w-full bg-gray-900 rounded-t-2xl max-h-[75vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <h3 className="font-semibold text-white">
             {comments.length} Comments
@@ -89,7 +88,6 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
           </button>
         </div>
 
-        {/* Comment list */}
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
           {loading ? (
             <p className="text-gray-500 text-sm text-center py-8">
@@ -124,7 +122,6 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
           )}
         </div>
 
-        {/* Comment input */}
         <div className="px-4 py-3 border-t border-white/10 flex items-center gap-3">
           <img
             src={currentUser.avatar_url || "https://i.pravatar.cc/40"}
@@ -147,7 +144,6 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
             <Send size={20} />
           </button>
         </div>
-
       </div>
     </div>
   )
