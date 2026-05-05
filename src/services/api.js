@@ -228,3 +228,28 @@ export const getReelsByHashtag = async (tag, token) => {
   if (!response || !response.ok) throw new Error("Failed to load hashtag reels")
   return response.json()
 }
+
+// --- NOTIFICATIONS ---
+
+export const getNotifications = async (token) => {
+  const response = await authFetch(`${BASE_URL}/notifications/`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Failed to load notifications")
+  return response.json()
+}
+
+export const getUnreadCount = async (token) => {
+  const response = await authFetch(`${BASE_URL}/notifications/unread-count`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) return { unread_count: 0 }
+  return response.json()
+}
+
+export const markNotificationsRead = async (token) => {
+  await authFetch(`${BASE_URL}/notifications/mark-read`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}

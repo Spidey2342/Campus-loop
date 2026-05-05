@@ -89,7 +89,20 @@ function ProfileHeader({ username, isOwnProfile }) {
               >
                 🚩 Report account
               </button>
+              
             )}
+            {isOwnProfile && (
+  <button
+    onClick={() => {
+      localStorage.clear()
+      window.location.href = "/login"
+    }}
+    className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 rounded-xl text-red-400 text-sm"
+  >
+    <LogOut size={16} />
+    Log out
+  </button>
+)}
 
             <button
               onClick={() => setShowMenu(false)}

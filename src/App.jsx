@@ -11,6 +11,8 @@ import UploadPage from './pages/UploadPage'
 import Profilepage from './pages/Profilepage'
 import DiscoverPage from './pages/DiscoverPage'
 import ReelPage from './pages/ReelPage'
+import NotificationsPage from './pages/NotificationsPage'
+
 
 function App() {
   return (
@@ -46,6 +48,10 @@ function App() {
       <Route path="/reel/:reelId" element={
         <ProtectedRoute><ReelPage /></ProtectedRoute>
       } />
+
+<Route path="/notifications" element={
+  <ProtectedRoute><NotificationsPage /></ProtectedRoute>
+} />
 
     </Routes>
   )
