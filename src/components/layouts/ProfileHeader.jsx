@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MoreVertical, Share2, X } from 'lucide-react'
+import { MoreVertical, Share2, X, LogOut } from 'lucide-react'
 
 function ProfileHeader({ username, isOwnProfile }) {
   const navigate = useNavigate()
@@ -28,6 +28,11 @@ function ProfileHeader({ username, isOwnProfile }) {
     setShowMenu(false)
   }
 
+  const handleLogout = () => {
+    localStorage.clear()
+    window.location.href = "/login"
+  }
+
   return (
     <>
       <div className="flex items-center justify-between px-4 py-3">
@@ -38,12 +43,10 @@ function ProfileHeader({ username, isOwnProfile }) {
           ←
         </button>
 
-        {/* Real username — not hardcoded */}
         <h2 className="font-semibold text-white">
           @{username || "profile"}
         </h2>
 
-        {/* 3-dot menu button */}
         <button
           onClick={() => setShowMenu(true)}
           className="text-white p-1"
@@ -52,7 +55,6 @@ function ProfileHeader({ username, isOwnProfile }) {
         </button>
       </div>
 
-      {/* Options menu — slides up from bottom */}
       {showMenu && (
         <div
           className="fixed inset-0 z-50 flex items-end"
@@ -69,7 +71,7 @@ function ProfileHeader({ username, isOwnProfile }) {
               </button>
             </div>
 
-            {/* Share profile */}
+            {/* Share — shows on ALL profiles */}
             <button
               onClick={handleShare}
               className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 rounded-xl text-white text-sm"
@@ -78,7 +80,7 @@ function ProfileHeader({ username, isOwnProfile }) {
               Share profile
             </button>
 
-            {/* Report — only show on other profiles */}
+            {/* Report — only on OTHER people's profiles */}
             {!isOwnProfile && (
               <button
                 onClick={() => {
@@ -89,20 +91,18 @@ function ProfileHeader({ username, isOwnProfile }) {
               >
                 🚩 Report account
               </button>
-              
             )}
+
+            {/* Logout — only on YOUR OWN profile */}
             {isOwnProfile && (
-  <button
-    onClick={() => {
-      localStorage.clear()
-      window.location.href = "/login"
-    }}
-    className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 rounded-xl text-red-400 text-sm"
-  >
-    <LogOut size={16} />
-    Log out
-  </button>
-)}
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 rounded-xl text-red-400 text-sm"
+              >
+                <LogOut size={16} />
+                Log out
+              </button>
+            )}
 
             <button
               onClick={() => setShowMenu(false)}
