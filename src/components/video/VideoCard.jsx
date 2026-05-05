@@ -1,10 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
-import VideoInfo from '../layouts/VideoInfo'
-import ActionBar from '../layouts/ActionBar'
-import { Heart } from 'lucide-react'
-import { likeReel, viewReel } from '../../services/api'
-
-function VideoCard({ reel, onDelete }) {
+function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
   const [showHeart, setShowHeart] = useState(false)
   const [isLiked, setIsLiked] = useState(reel.is_liked)
   const [likesCount, setLikesCount] = useState(reel.likes_count)
@@ -26,39 +20,34 @@ function VideoCard({ reel, onDelete }) {
   const handleTap = () => {
     const now = Date.now()
     if (now - lastTap < 300) {
-      // Double tap — like the reel
       setShowHeart(true)
       setTimeout(() => setShowHeart(false), 800)
-      if (!isLiked) handleLike() // only like if not already liked
+      if (!isLiked) handleLike()
     }
     lastTap = now
   }
 
+  // Play/pause based on whether this card is active
   useEffect(() => {
     const videoEl = videoRef.current
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          videoEl.play().catch(() => {})
-          // Count view once per reel per session
-          if (!viewCounted) {
-            viewReel(reel.id, token)
-            setViewCounted(true)
-          }
-        } else {
-          videoEl.pause()
-        }
-      },
-      { threshold: 0.8 }
-    )
-    if (videoEl) observer.observe(videoEl)
-    return () => { if (videoEl) observer.unobserve(videoEl) }
-  }, [])
+    if (!videoEl) return
+
+    if (isActive) {
+      videoEl.play().catch(() => {})
+      // Count view when active
+      if (!viewCounted) {
+        viewReel(reel.id, token)
+        setViewCounted(true)
+      }
+    } else {
+      videoEl.pause()
+      videoEl.currentTime = 0  // reset to start when not active
+    }
+  }, [isActive])
 
   return (
     <div className="relative h-full w-full bg-black" onClick={handleTap}>
 
-      {/* Double tap heart animation */}
       {showHeart && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
           <Heart className="text-white animate-ping" size={100} fill="white" />
@@ -70,21 +59,20 @@ function VideoCard({ reel, onDelete }) {
         src={reel.video_url}
         loop
         playsInline
-     
+        muted
+        // preload="auto" on active and next 2, "none" for far away videos
+        preload={shouldPreload ? "auto" : "none"}
         className="h-full w-full object-cover"
       />
 
-      {/* Pass real reel data down to children */}
       <VideoInfo reel={reel} />
-     <ActionBar
+      <ActionBar
         reel={reel}
         isLiked={isLiked}
         likesCount={likesCount}
         onLike={handleLike}
-        onDelete={onDelete}  // 👈 pass it down
+        onDelete={onDelete}
       />
     </div>
   )
 }
-
-export default VideoCard
