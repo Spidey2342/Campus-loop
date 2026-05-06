@@ -1,3 +1,5 @@
+import React from 'react'
+
 function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
   const [showHeart, setShowHeart] = useState(false)
   const [isLiked, setIsLiked] = useState(reel.is_liked)
@@ -76,3 +78,5 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
     </div>
   )
 }
+
+export default VideoCard
