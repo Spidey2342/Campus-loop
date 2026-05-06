@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/layouts/ProtectedRoute'
 import PublicRoute from './components/layouts/PublicRoute'
+import InstallPrompt from './components/InstallPrompt'
 
 // Pages
 import Login from './pages/Login'
@@ -16,6 +17,7 @@ import NotificationsPage from './pages/NotificationsPage'
 
 function App() {
   return (
+    <>
     <Routes>
 
       {/* Public routes — logged in users get redirected to feed */}
@@ -54,6 +56,8 @@ function App() {
 } />
 
     </Routes>
+     <InstallPrompt />
+     </>
   )
 }
 
