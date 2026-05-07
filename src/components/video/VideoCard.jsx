@@ -1,4 +1,5 @@
 import React from 'react'
+import { useState } from 'react'
 
 function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
   const [showHeart, setShowHeart] = useState(false)
