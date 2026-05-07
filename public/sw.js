@@ -36,11 +36,12 @@ self.addEventListener('activate', (event) => {
 // This means users always get fresh content when online
 // but the app still works offline
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests and API calls
+  // Skip non-GET requests, API calls, and non-http schemes
   if (
     event.request.method !== 'GET' ||
     event.request.url.includes('onrender.com') ||
-    event.request.url.includes('cloudinary.com')
+    event.request.url.includes('cloudinary.com') ||
+    !event.request.url.startsWith('http')  // 👈 skip chrome-extension://
   ) {
     return
   }
@@ -48,7 +49,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cache successful responses
         if (response.status === 200) {
           const clone = response.clone()
           caches.open(CACHE_NAME).then(cache => {
@@ -58,10 +58,8 @@ self.addEventListener('fetch', (event) => {
         return response
       })
       .catch(() => {
-        // Network failed — try cache
         return caches.match(event.request).then(cached => {
           if (cached) return cached
-          // Return offline page for navigation requests
           if (event.request.mode === 'navigate') {
             return caches.match('/index.html')
           }

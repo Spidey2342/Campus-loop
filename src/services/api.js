@@ -253,3 +253,16 @@ export const markNotificationsRead = async (token) => {
     headers: { Authorization: `Bearer ${token}` },
   })
 }
+
+export const getUnreadCount = async (token) => {
+  try {
+    const response = await authFetch(`${BASE_URL}/notifications/unread-count`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!response || !response.ok) return { unread_count: 0 }
+    return response.json()
+  } catch (err) {
+    // Silently return 0 if server is sleeping
+    return { unread_count: 0 }
+  }
+}

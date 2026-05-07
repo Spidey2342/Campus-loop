@@ -14,19 +14,19 @@ function BottomNav() {
 
   // Poll for unread notifications every 30 seconds
   useEffect(() => {
-    const fetchCount = async () => {
-      try {
-        const data = await getUnreadCount(token)
-        setUnreadCount(data.unread_count || 0)
-      } catch (err) {
-        // silently fail
-      }
+  const fetchCount = async () => {
+    try {
+      const data = await getUnreadCount(token)
+      setUnreadCount(data?.unread_count || 0)
+    } catch {
+      // Server sleeping — ignore silently
     }
+  }
 
-    fetchCount()
-    const interval = setInterval(fetchCount, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  fetchCount()
+  const interval = setInterval(fetchCount, 60000) // every 60s not 30s
+  return () => clearInterval(interval)
+}, [])
 
   const handleLogout = () => {
     localStorage.clear()

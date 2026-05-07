@@ -101,7 +101,6 @@ function VideoEditor({ file, onEditChange }) {
           onTimeUpdate={handleTimeUpdate}
           autoPlay
           loop
-          muted
           playsInline
         />
 
