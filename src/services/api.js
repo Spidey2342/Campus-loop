@@ -239,13 +239,6 @@ export const getNotifications = async (token) => {
   return response.json()
 }
 
-export const getUnreadCount = async (token) => {
-  const response = await authFetch(`${BASE_URL}/notifications/unread-count`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!response || !response.ok) return { unread_count: 0 }
-  return response.json()
-}
 
 export const markNotificationsRead = async (token) => {
   await authFetch(`${BASE_URL}/notifications/mark-read`, {
