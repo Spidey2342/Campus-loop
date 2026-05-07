@@ -1,5 +1,8 @@
-import React from 'react'
-import { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import VideoInfo from '../layouts/VideoInfo'
+import ActionBar from '../layouts/ActionBar'
+import { Heart } from 'lucide-react'
+import { likeReel, viewReel } from '../../services/api'
 
 function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
   const [showHeart, setShowHeart] = useState(false)
@@ -30,21 +33,19 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
     lastTap = now
   }
 
-  // Play/pause based on whether this card is active
   useEffect(() => {
     const videoEl = videoRef.current
     if (!videoEl) return
 
     if (isActive) {
       videoEl.play().catch(() => {})
-      // Count view when active
       if (!viewCounted) {
         viewReel(reel.id, token)
         setViewCounted(true)
       }
     } else {
       videoEl.pause()
-      videoEl.currentTime = 0  // reset to start when not active
+      videoEl.currentTime = 0
     }
   }, [isActive])
 
@@ -63,7 +64,6 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
         loop
         playsInline
         muted
-        // preload="auto" on active and next 2, "none" for far away videos
         preload={shouldPreload ? "auto" : "none"}
         className="h-full w-full object-cover"
       />
