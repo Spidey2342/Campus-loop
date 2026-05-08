@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { followUser } from '../../services/api'
+import { startDM } from '../../services/api'
 
 function UserInfo({ profile, onEditClick }) {
   const [isFollowing, setIsFollowing] = useState(profile.is_following)
@@ -99,7 +100,19 @@ function UserInfo({ profile, onEditClick }) {
           >
             {isFollowing ? "Following" : "Follow"}
           </button>
+          
         )}
+        {!profile.is_own_profile && (
+  <button
+    onClick={async () => {
+      const conv = await startDM(profile.username, token)
+      navigate(`/messages/${conv.id}`)
+    }}
+    className="border border-white/30 px-4 py-2 rounded-xl text-sm text-white"
+  >
+    Message
+  </button>
+)}
         <button className="border border-white/30 px-4 py-2 rounded-xl text-sm text-white">
           Share
         </button>

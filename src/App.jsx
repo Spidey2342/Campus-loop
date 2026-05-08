@@ -50,6 +50,15 @@ function App() {
       <Route path="/reel/:reelId" element={
         <ProtectedRoute><ReelPage /></ProtectedRoute>
       } />
+      <Route path="/messages" element={
+  <ProtectedRoute><MessagesPage /></ProtectedRoute>
+} />
+<Route path="/messages/new" element={
+  <ProtectedRoute><NewMessagePage /></ProtectedRoute>
+} />
+<Route path="/messages/:conversationId" element={
+  <ProtectedRoute><ChatPage /></ProtectedRoute>
+} />
 
 <Route path="/notifications" element={
   <ProtectedRoute><NotificationsPage /></ProtectedRoute>

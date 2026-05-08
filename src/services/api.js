@@ -259,3 +259,46 @@ export const getUnreadCount = async (token) => {
     return { unread_count: 0 }
   }
 }
+
+// --- MESSAGES ---
+
+export const getConversations = async (token) => {
+  const response = await authFetch(`${BASE_URL}/messages/conversations`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Failed to load conversations")
+  return response.json()
+}
+
+export const startDM = async (username, token) => {
+  const response = await authFetch(
+    `${BASE_URL}/messages/conversations/dm/${encodeURIComponent(username)}`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
+  if (!response || !response.ok) throw new Error("Failed to start conversation")
+  return response.json()
+}
+
+export const createGroup = async (name, usernames, token) => {
+  const response = await authFetch(
+    `${BASE_URL}/messages/conversations/group?name=${encodeURIComponent(name)}&usernames=${encodeURIComponent(usernames)}`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
+  if (!response || !response.ok) throw new Error("Failed to create group")
+  return response.json()
+}
+
+export const getMessages = async (conversationId, token, skip = 0) => {
+  const response = await authFetch(
+    `${BASE_URL}/messages/conversations/${conversationId}/messages?skip=${skip}&limit=50`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!response || !response.ok) throw new Error("Failed to load messages")
+  return response.json()
+}

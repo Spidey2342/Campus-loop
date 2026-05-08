@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Home, Compass, Plus, Bell, User, LogOut } from "lucide-react"
+import { Home, Compass, Plus, Bell, User, MessageCircle } from "lucide-react"
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getUnreadCount } from '../../services/api'
 
@@ -61,6 +61,13 @@ function BottomNav() {
         >
           <Plus className="text-black" size={22} />
         </button>
+<button
+  onClick={() => navigate("/messages")}
+  className={`flex flex-col items-center gap-0.5 ${isActive("/messages") ? "text-teal-400" : "text-gray-400"}`}
+>
+  <MessageCircle size={22} />
+  <span className="text-xs">Messages</span>
+</button>
 
         {/* Notifications bell with unread badge */}
         <button
