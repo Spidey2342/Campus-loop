@@ -13,6 +13,9 @@ import Profilepage from './pages/Profilepage'
 import DiscoverPage from './pages/DiscoverPage'
 import ReelPage from './pages/ReelPage'
 import NotificationsPage from './pages/NotificationsPage'
+import NewMessagePage from './pages/NewMessagePage'
+import MessagesPage from './pages/MessagesPage'
+import ChatPage from './pages/ChatPage'
 
 
 function App() {
