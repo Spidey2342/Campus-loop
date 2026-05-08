@@ -63,7 +63,7 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
         src={reel.video_url}
         loop
         playsInline
-        preload={shouldPreload ? "auto" : "none"}
+        preload={shouldPreload ? "metadata" : "none"}
         className="h-full w-full object-cover"
       />
 

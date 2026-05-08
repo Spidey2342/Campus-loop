@@ -101,7 +101,7 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
             comments.map((comment) => (
               <div key={comment.id} className="flex gap-3">
                 <img
-                  src={comment.avatar_url || "https://i.pravatar.cc/40"}
+                  src={comment.avatar_url}
                   className="w-9 h-9 rounded-full object-cover flex-shrink-0"
                 />
                 <div className="flex-1">

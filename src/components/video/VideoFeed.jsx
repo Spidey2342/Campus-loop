@@ -16,6 +16,7 @@ function VideoFeed({ feedType }) {
   const loadReels = useCallback(async (reset = false) => {
     try {
       setLoading(true)
+       reset ? setLoading(true) : setLoadingMore(true)
       const currentSkip = reset ? 0 : skip
       const data = await getFeed(token, feedType, currentSkip)
       const safeData = Array.isArray(data) ? data : []
@@ -29,6 +30,7 @@ function VideoFeed({ feedType }) {
       if (reset) setReels([])
     } finally {
       setLoading(false)
+      setLoadingMore(false) 
     }
   }, [feedType, token])
 
@@ -95,11 +97,25 @@ function VideoFeed({ feedType }) {
       ))}
 
       {/* Auto load more indicator */}
-      {loading && reels.length > 0 && (
-        <div className="h-20 flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
-        </div>
-      )}
+     {/* Loading more indicator */}
+{loadingMore && (
+  <div className="h-20 flex items-center justify-center">
+    <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+  </div>
+)}
+
+{/* End of feed */}
+{!hasMore && reels.length > 0 && (
+  <div className="h-32 flex flex-col items-center justify-center gap-2">
+    <p className="text-gray-500 text-sm">You've seen everything!</p>
+    <button
+      onClick={() => { setSkip(0); setHasMore(true); loadReels(true) }}
+      className="text-teal-400 text-sm underline"
+    >
+      Refresh feed
+    </button>
+  </div>
+)}
     </div>
   )
 }
