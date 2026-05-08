@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { followUser } from '../../services/api'
 import { startDM } from '../../services/api'
+import { useNavigate } from 'react-router-dom'
 
 function UserInfo({ profile, onEditClick }) {
+    const navigate = useNavigate()
   const [isFollowing, setIsFollowing] = useState(profile.is_following)
   const [followersCount, setFollowersCount] = useState(profile.followers_count)
   const token = localStorage.getItem("token")
