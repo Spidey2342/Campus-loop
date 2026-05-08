@@ -1,22 +1,26 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import VideoCard from './VideoCard'
 import { getFeed } from '../../services/api'
-import { useNavigate } from 'react-router-dom'
 
 function VideoFeed({ feedType }) {
   const [reels, setReels] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false) // 👈 was missing
   const [skip, setSkip] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   const token = localStorage.getItem("token")
-  const navigate = useNavigate()
   const containerRef = useRef(null)
 
   const loadReels = useCallback(async (reset = false) => {
     try {
-      setLoading(true)
-       reset ? setLoading(true) : setLoadingMore(true)
+      // Use different loading states for initial vs loading more
+      if (reset) {
+        setLoading(true)
+      } else {
+        setLoadingMore(true)
+      }
+
       const currentSkip = reset ? 0 : skip
       const data = await getFeed(token, feedType, currentSkip)
       const safeData = Array.isArray(data) ? data : []
@@ -30,25 +34,26 @@ function VideoFeed({ feedType }) {
       if (reset) setReels([])
     } finally {
       setLoading(false)
-      setLoadingMore(false) 
+      setLoadingMore(false)
     }
-  }, [feedType, token])
+  }, [feedType, token, skip])
 
   useEffect(() => {
     setSkip(0)
     setHasMore(true)
     setCurrentIndex(0)
+    setReels([])
     loadReels(true)
   }, [feedType])
 
-  // Load more when user is 3 reels from the end
+  // Auto load more when 3 reels from end
   useEffect(() => {
-    if (currentIndex >= reels.length - 3 && hasMore && !loading) {
+    if (currentIndex >= reels.length - 3 && hasMore && !loading && !loadingMore) {
       loadReels()
     }
   }, [currentIndex])
 
-  // Track which reel is currently visible
+  // Track visible reel by scroll position
   const handleScroll = () => {
     if (!containerRef.current) return
     const scrollTop = containerRef.current.scrollTop
@@ -64,7 +69,7 @@ function VideoFeed({ feedType }) {
     </div>
   )
 
-  if (reels.length === 0) return (
+  if (!loading && reels.length === 0) return (
     <div className="h-full flex flex-col items-center justify-center text-white gap-3">
       <p className="text-4xl">🎬</p>
       <p className="text-gray-400 text-center px-8">
@@ -85,8 +90,6 @@ function VideoFeed({ feedType }) {
         <div key={reel.id} className="h-screen snap-start relative">
           <VideoCard
             reel={reel}
-            // Preload current + next 2 videos
-            // Videos more than 2 away get unloaded to save memory
             isActive={index === currentIndex}
             shouldPreload={index >= currentIndex && index <= currentIndex + 2}
             onDelete={(deletedId) => {
@@ -96,26 +99,29 @@ function VideoFeed({ feedType }) {
         </div>
       ))}
 
-      {/* Auto load more indicator */}
-     {/* Loading more indicator */}
-{loadingMore && (
-  <div className="h-20 flex items-center justify-center">
-    <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
-  </div>
-)}
+      {/* Small spinner while loading more — doesn't interrupt feed */}
+      {loadingMore && (
+        <div className="h-20 flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
 
-{/* End of feed */}
-{!hasMore && reels.length > 0 && (
-  <div className="h-32 flex flex-col items-center justify-center gap-2">
-    <p className="text-gray-500 text-sm">You've seen everything!</p>
-    <button
-      onClick={() => { setSkip(0); setHasMore(true); loadReels(true) }}
-      className="text-teal-400 text-sm underline"
-    >
-      Refresh feed
-    </button>
-  </div>
-)}
+      {/* End of feed */}
+      {!hasMore && reels.length > 0 && (
+        <div className="h-32 flex flex-col items-center justify-center gap-2">
+          <p className="text-gray-500 text-sm">You've seen everything!</p>
+          <button
+            onClick={() => {
+              setSkip(0)
+              setHasMore(true)
+              loadReels(true)
+            }}
+            className="text-teal-400 text-sm underline"
+          >
+            Refresh feed
+          </button>
+        </div>
+      )}
     </div>
   )
 }
