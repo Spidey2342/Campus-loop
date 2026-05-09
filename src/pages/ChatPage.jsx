@@ -20,6 +20,33 @@ function ChatPage() {
 
   // Load messages
   const loadMessages = async (initial = false) => {
+    const [convInfo, setConvInfo] = useState(null)
+
+// Add this inside the initial load useEffect
+useEffect(() => {
+  const load = async () => {
+    try {
+      // Load conversation info
+      const convResponse = await fetch(
+        `${BASE_URL}/messages/conversations`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      const convData = await convResponse.json()
+      const thisConv = Array.isArray(convData)
+        ? convData.find(c => c.id === conversationId)
+        : null
+      setConvInfo(thisConv)
+
+      // Load messages
+      await loadMessages(true)
+    } catch (err) {
+      console.error(err)
+      setLoading(false)
+    }
+  }
+  load()
+}, [conversationId])
+
     try {
       const data = await getMessages(conversationId, token)
       const safeData = Array.isArray(data) ? data : []
@@ -132,21 +159,56 @@ function ChatPage() {
     <div className="h-screen bg-black text-white flex flex-col">
 
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 flex-shrink-0">
-        <button onClick={() => navigate("/messages")}>
-          <ArrowLeft size={20} />
-        </button>
-        <div className="w-10 h-10 rounded-full bg-teal-800 flex items-center justify-center text-sm font-bold flex-shrink-0">
-          {getInitials(currentUser.full_name)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm">Chat</p>
-          <p className="text-xs text-gray-500">● Active</p>
-        </div>
-        <button className="text-gray-400">
-          <MoreVertical size={20} />
-        </button>
-      </div>
+      {/* Header */}
+<div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 flex-shrink-0">
+  <button onClick={() => navigate("/messages")}>
+    <ArrowLeft size={20} />
+  </button>
+
+  {/* Avatar */}
+  {convInfo?.avatar_url ? (
+    <img
+      src={convInfo.avatar_url}
+      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+    />
+  ) : (
+    <div className="w-10 h-10 rounded-full bg-teal-800 flex items-center justify-center text-sm font-bold flex-shrink-0">
+      {getInitials(convInfo?.name || "?")}
+    </div>
+  )}
+
+  <div className="flex-1 min-w-0">
+    <div className="flex items-center gap-2">
+      <p className="font-semibold text-sm truncate">
+        {convInfo?.name || "Loading..."}
+      </p>
+      {/* School badge for DMs */}
+      {convInfo?.school_name && (
+        <span className="text-xs bg-teal-900/50 text-teal-400 px-2 py-0.5 rounded-full flex-shrink-0">
+          {convInfo.school_name.split(" ")[0]}
+        </span>
+      )}
+      {/* Group badge */}
+      {convInfo?.type === "group" && (
+        <span className="text-xs bg-purple-900/50 text-purple-400 px-2 py-0.5 rounded-full flex-shrink-0">
+          GROUP
+        </span>
+      )}
+    </div>
+    <p className="text-xs text-gray-500">
+      {convInfo?.type === "group"
+        ? `${convInfo.members_count} members`
+        : "● Active"}
+    </p>
+  </div>
+
+  <button
+    onClick={() => navigate(`/profile/${convInfo?.username}`)}
+    className="text-gray-400"
+  >
+    <MoreVertical size={20} />
+  </button>
+</div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
