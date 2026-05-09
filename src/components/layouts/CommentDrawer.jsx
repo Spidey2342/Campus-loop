@@ -124,7 +124,7 @@ function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
 
         <div className="px-4 py-3 border-t border-white/10 flex items-center gap-3">
           <img
-            src={currentUser.avatar_url || "https://i.pravatar.cc/40"}
+            src={currentUser.avatar_url}
             className="w-9 h-9 rounded-full object-cover flex-shrink-0"
           />
           <input
