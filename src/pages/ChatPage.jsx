@@ -8,45 +8,23 @@ const BASE_URL = "https://campus-backend-moz5.onrender.com"
 function ChatPage() {
   const { conversationId } = useParams()
   const navigate = useNavigate()
+
+  // ✅ All state at the top — nothing inside other functions
   const [messages, setMessages] = useState([])
+  const [convInfo, setConvInfo] = useState(null)
   const [text, setText] = useState("")
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const lastMessageIdRef = useRef(null)
+
   const token = localStorage.getItem("token")
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
 
-  // Load messages
+  // ✅ loadMessages is a clean standalone function
   const loadMessages = async (initial = false) => {
-    const [convInfo, setConvInfo] = useState(null)
-
-// Add this inside the initial load useEffect
-useEffect(() => {
-  const load = async () => {
-    try {
-      // Load conversation info
-      const convResponse = await fetch(
-        `${BASE_URL}/messages/conversations`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      const convData = await convResponse.json()
-      const thisConv = Array.isArray(convData)
-        ? convData.find(c => c.id === conversationId)
-        : null
-      setConvInfo(thisConv)
-
-      // Load messages
-      await loadMessages(true)
-    } catch (err) {
-      console.error(err)
-      setLoading(false)
-    }
-  }
-  load()
-}, [conversationId])
-
     try {
       const data = await getMessages(conversationId, token)
       const safeData = Array.isArray(data) ? data : []
@@ -57,8 +35,6 @@ useEffect(() => {
         return
       }
 
-      // Only update if there are new messages
-      // Check if last message ID changed
       if (safeData.length > 0) {
         const lastId = safeData[safeData.length - 1].id
         if (lastId !== lastMessageIdRef.current) {
@@ -72,12 +48,32 @@ useEffect(() => {
     }
   }
 
-  // Initial load
+  // ✅ Load conversation info + messages on mount
   useEffect(() => {
-    loadMessages(true)
+    const load = async () => {
+      try {
+        // Get conversation info to show name in header
+        const convResponse = await fetch(
+          `${BASE_URL}/messages/conversations`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+        const convData = await convResponse.json()
+        const thisConv = Array.isArray(convData)
+          ? convData.find(c => c.id === conversationId)
+          : null
+        setConvInfo(thisConv)
+
+        // Load messages
+        await loadMessages(true)
+      } catch (err) {
+        console.error(err)
+        setLoading(false)
+      }
+    }
+    load()
   }, [conversationId])
 
-  // Poll every 3 seconds for new messages
+  // ✅ Poll every 3 seconds for new messages
   useEffect(() => {
     const interval = setInterval(() => {
       loadMessages(false)
@@ -85,7 +81,7 @@ useEffect(() => {
     return () => clearInterval(interval)
   }, [conversationId])
 
-  // Scroll to bottom when messages change
+  // ✅ Scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
@@ -111,7 +107,6 @@ useEffect(() => {
     setMessages(prev => [...prev, optimistic])
 
     try {
-      // Send via HTTP POST
       const response = await fetch(
         `${BASE_URL}/messages/conversations/${conversationId}/send`,
         {
@@ -123,9 +118,7 @@ useEffect(() => {
           body: JSON.stringify({ text: messageText }),
         }
       )
-
       if (response.ok) {
-        // Reload messages to get the real message with server ID
         await loadMessages(false)
       }
     } catch (err) {
@@ -159,56 +152,54 @@ useEffect(() => {
     <div className="h-screen bg-black text-white flex flex-col">
 
       {/* Header */}
-      {/* Header */}
-<div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 flex-shrink-0">
-  <button onClick={() => navigate("/messages")}>
-    <ArrowLeft size={20} />
-  </button>
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 flex-shrink-0">
+        <button onClick={() => navigate("/messages")}>
+          <ArrowLeft size={20} />
+        </button>
 
-  {/* Avatar */}
-  {convInfo?.avatar_url ? (
-    <img
-      src={convInfo.avatar_url}
-      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-    />
-  ) : (
-    <div className="w-10 h-10 rounded-full bg-teal-800 flex items-center justify-center text-sm font-bold flex-shrink-0">
-      {getInitials(convInfo?.name || "?")}
-    </div>
-  )}
+        {convInfo?.avatar_url ? (
+          <img
+            src={convInfo.avatar_url}
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-teal-800 flex items-center justify-center text-sm font-bold flex-shrink-0">
+            {getInitials(convInfo?.name || "?")}
+          </div>
+        )}
 
-  <div className="flex-1 min-w-0">
-    <div className="flex items-center gap-2">
-      <p className="font-semibold text-sm truncate">
-        {convInfo?.name || "Loading..."}
-      </p>
-      {/* School badge for DMs */}
-      {convInfo?.school_name && (
-        <span className="text-xs bg-teal-900/50 text-teal-400 px-2 py-0.5 rounded-full flex-shrink-0">
-          {convInfo.school_name.split(" ")[0]}
-        </span>
-      )}
-      {/* Group badge */}
-      {convInfo?.type === "group" && (
-        <span className="text-xs bg-purple-900/50 text-purple-400 px-2 py-0.5 rounded-full flex-shrink-0">
-          GROUP
-        </span>
-      )}
-    </div>
-    <p className="text-xs text-gray-500">
-      {convInfo?.type === "group"
-        ? `${convInfo.members_count} members`
-        : "● Active"}
-    </p>
-  </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="font-semibold text-sm truncate">
+              {convInfo?.name || "Loading..."}
+            </p>
+            {convInfo?.school_name && (
+              <span className="text-xs bg-teal-900/50 text-teal-400 px-2 py-0.5 rounded-full flex-shrink-0">
+                {convInfo.school_name.split(" ")[0]}
+              </span>
+            )}
+            {convInfo?.type === "group" && (
+              <span className="text-xs bg-purple-900/50 text-purple-400 px-2 py-0.5 rounded-full flex-shrink-0">
+                GROUP
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500">
+            {convInfo?.type === "group"
+              ? `${convInfo.members_count} members`
+              : "● Active"}
+          </p>
+        </div>
 
-  <button
-    onClick={() => navigate(`/profile/${convInfo?.username}`)}
-    className="text-gray-400"
-  >
-    <MoreVertical size={20} />
-  </button>
-</div>
+        <button
+          onClick={() => {
+            if (convInfo?.username) navigate(`/profile/${convInfo.username}`)
+          }}
+          className="text-gray-400"
+        >
+          <MoreVertical size={20} />
+        </button>
+      </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
@@ -224,7 +215,6 @@ useEffect(() => {
         ) : (
           Object.entries(groupedMessages).map(([date, msgs]) => (
             <div key={date}>
-              {/* Date divider */}
               <div className="flex items-center justify-center my-4">
                 <div className="bg-white/10 px-3 py-1 rounded-full">
                   <p className="text-xs text-gray-400">
@@ -247,7 +237,7 @@ useEffect(() => {
 
                 const isMine = msg.is_mine
                 const showAvatar = !isMine &&
-                  (i === 0 || msgs[i-1]?.sender_id !== msg.sender_id)
+                  (i === 0 || msgs[i - 1]?.sender_id !== msg.sender_id)
 
                 return (
                   <div
