@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Send, Plus, MoreVertical } from 'lucide-react'
 import { getMessages } from '../services/api'
 
 const BASE_URL = "https://campus-backend-moz5.onrender.com"
-const WS_URL = BASE_URL.replace("https://", "wss://").replace("http://", "ws://")
 
 function ChatPage() {
   const { conversationId } = useParams()
@@ -12,57 +11,51 @@ function ChatPage() {
   const [messages, setMessages] = useState([])
   const [text, setText] = useState("")
   const [loading, setLoading] = useState(true)
-  const [convInfo, setConvInfo] = useState(null)
-  const [wsConnected, setWsConnected] = useState(false)
-  const wsRef = useRef(null)
+  const [sending, setSending] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+  const lastMessageIdRef = useRef(null)
   const token = localStorage.getItem("token")
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
 
-  // Load existing messages
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getMessages(conversationId, token)
-        setMessages(Array.isArray(data) ? data : [])
-      } catch (err) {
-        console.error(err)
-      } finally {
+  // Load messages
+  const loadMessages = async (initial = false) => {
+    try {
+      const data = await getMessages(conversationId, token)
+      const safeData = Array.isArray(data) ? data : []
+
+      if (initial) {
+        setMessages(safeData)
         setLoading(false)
+        return
       }
+
+      // Only update if there are new messages
+      // Check if last message ID changed
+      if (safeData.length > 0) {
+        const lastId = safeData[safeData.length - 1].id
+        if (lastId !== lastMessageIdRef.current) {
+          lastMessageIdRef.current = lastId
+          setMessages(safeData)
+        }
+      }
+    } catch (err) {
+      console.error(err)
+      if (initial) setLoading(false)
     }
-    load()
+  }
+
+  // Initial load
+  useEffect(() => {
+    loadMessages(true)
   }, [conversationId])
 
-  // Connect WebSocket
+  // Poll every 3 seconds for new messages
   useEffect(() => {
-    const ws = new WebSocket(`${WS_URL}/messages/ws/${conversationId}?token=${token}`)
-
-    ws.onopen = () => {
-      setWsConnected(true)
-    }
-
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data)
-      // Mark as mine if sender is current user
-      message.is_mine = message.sender_is === currentUser.id
-      setMessages(prev => [...prev, message])
-    }
-
-    ws.onclose = () => {
-      setWsConnected(false)
-    }
-
-    ws.onerror = (err) => {
-      console.error("WebSocket error:", err)
-    }
-
-    wsRef.current = ws
-
-    return () => {
-      ws.close()
-    }
+    const interval = setInterval(() => {
+      loadMessages(false)
+    }, 3000)
+    return () => clearInterval(interval)
   }, [conversationId])
 
   // Scroll to bottom when messages change
@@ -70,14 +63,17 @@ function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  const sendMessage = () => {
-    if (!text.trim()) return
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
+  const sendMessage = async () => {
+    if (!text.trim() || sending) return
 
-    // Optimistic update — show message immediately
-    const optimisticMsg = {
-      id: Date.now().toString(),
-      text: text.trim(),
+    const messageText = text.trim()
+    setText("")
+    setSending(true)
+
+    // Optimistic update
+    const optimistic = {
+      id: `temp-${Date.now()}`,
+      text: messageText,
       message_type: "text",
       sender_id: currentUser.id,
       sender_username: currentUser.username,
@@ -85,17 +81,39 @@ function ChatPage() {
       is_mine: true,
       created_at: new Date().toISOString(),
     }
-    setMessages(prev => [...prev, optimisticMsg])
-    setText("")
+    setMessages(prev => [...prev, optimistic])
 
-    // Send via WebSocket
-    wsRef.current.send(JSON.stringify({ text: text.trim() }))
+    try {
+      // Send via HTTP POST
+      const response = await fetch(
+        `${BASE_URL}/messages/conversations/${conversationId}/send`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ text: messageText }),
+        }
+      )
+
+      if (response.ok) {
+        // Reload messages to get the real message with server ID
+        await loadMessages(false)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSending(false)
+    }
   }
 
   const formatTime = (dateStr) => {
     if (!dateStr) return ""
-    const date = new Date(dateStr)
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    return new Date(dateStr).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit"
+    })
   }
 
   const getInitials = (name) => {
@@ -103,7 +121,6 @@ function ChatPage() {
     return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)
   }
 
-  // Group messages by date
   const groupedMessages = messages.reduce((groups, msg) => {
     const date = new Date(msg.created_at).toLocaleDateString()
     if (!groups[date]) groups[date] = []
@@ -119,28 +136,13 @@ function ChatPage() {
         <button onClick={() => navigate("/messages")}>
           <ArrowLeft size={20} />
         </button>
-
-        {/* Avatar */}
         <div className="w-10 h-10 rounded-full bg-teal-800 flex items-center justify-center text-sm font-bold flex-shrink-0">
-          {getInitials(convInfo?.name || "?")}
+          {getInitials(currentUser.full_name)}
         </div>
-
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="font-semibold text-sm truncate">
-              {convInfo?.name || "Chat"}
-            </p>
-            {convInfo?.school_name && (
-              <span className="text-xs bg-teal-900/50 text-teal-400 px-2 py-0.5 rounded-full flex-shrink-0">
-                {convInfo.school_name.split(" ")[0]}
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-teal-400">
-            {wsConnected ? "● Online" : "Connecting..."}
-          </p>
+          <p className="font-semibold text-sm">Chat</p>
+          <p className="text-xs text-gray-500">● Active</p>
         </div>
-
         <button className="text-gray-400">
           <MoreVertical size={20} />
         </button>
@@ -152,6 +154,11 @@ function ChatPage() {
           <div className="flex items-center justify-center py-10">
             <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
           </div>
+        ) : messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <p className="text-3xl">👋</p>
+            <p className="text-gray-400 text-sm">Say hello!</p>
+          </div>
         ) : (
           Object.entries(groupedMessages).map(([date, msgs]) => (
             <div key={date}>
@@ -160,14 +167,12 @@ function ChatPage() {
                 <div className="bg-white/10 px-3 py-1 rounded-full">
                   <p className="text-xs text-gray-400">
                     {new Date(date).toDateString() === new Date().toDateString()
-                      ? "Today"
-                      : date}
+                      ? "Today" : date}
                   </p>
                 </div>
               </div>
 
               {msgs.map((msg, i) => {
-                // System message
                 if (msg.message_type === "system") {
                   return (
                     <div key={msg.id} className="flex justify-center my-2">
@@ -179,14 +184,14 @@ function ChatPage() {
                 }
 
                 const isMine = msg.is_mine
-                const showAvatar = !isMine && (i === 0 || msgs[i-1]?.sender_id !== msg.sender_id)
+                const showAvatar = !isMine &&
+                  (i === 0 || msgs[i-1]?.sender_id !== msg.sender_id)
 
                 return (
                   <div
                     key={msg.id}
                     className={`flex items-end gap-2 ${isMine ? "flex-row-reverse" : "flex-row"}`}
                   >
-                    {/* Avatar — only show for others and first in a group */}
                     {!isMine && (
                       <div className="w-7 h-7 flex-shrink-0">
                         {showAvatar && (
@@ -204,15 +209,12 @@ function ChatPage() {
                       </div>
                     )}
 
-                    <div className={`max-w-[75%] ${isMine ? "items-end" : "items-start"} flex flex-col`}>
-                      {/* Sender name for group chats */}
+                    <div className={`max-w-[75%] flex flex-col ${isMine ? "items-end" : "items-start"}`}>
                       {!isMine && showAvatar && (
                         <p className="text-xs text-teal-400 mb-1 px-1">
                           {msg.sender_username}
                         </p>
                       )}
-
-                      {/* Bubble */}
                       <div className={`px-4 py-2.5 rounded-2xl ${
                         isMine
                           ? "bg-teal-500 text-black rounded-br-sm"
@@ -220,11 +222,11 @@ function ChatPage() {
                       }`}>
                         <p className="text-sm leading-relaxed">{msg.text}</p>
                       </div>
-
-                      {/* Time */}
                       <p className="text-xs text-gray-500 mt-1 px-1">
                         {formatTime(msg.created_at)}
-                        {isMine && <span className="ml-1 text-teal-400">✓✓</span>}
+                        {isMine && (
+                          <span className="ml-1 text-teal-400">✓✓</span>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -236,14 +238,14 @@ function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input bar */}
-      <div className="px-4 py-3 border-t border-white/10 flex items-center gap-3 flex-shrink-0"
+      {/* Input */}
+      <div
+        className="px-4 py-3 border-t border-white/10 flex items-center gap-3 flex-shrink-0"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
       >
         <button className="text-gray-400">
           <Plus size={22} />
         </button>
-
         <input
           ref={inputRef}
           value={text}
@@ -252,10 +254,9 @@ function ChatPage() {
           placeholder="Type a message..."
           className="flex-1 bg-white/10 rounded-full px-4 py-2.5 text-sm text-white outline-none placeholder-gray-500"
         />
-
         <button
           onClick={sendMessage}
-          disabled={!text.trim()}
+          disabled={!text.trim() || sending}
           className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center disabled:opacity-40 flex-shrink-0"
         >
           <Send size={16} className="text-black" />
