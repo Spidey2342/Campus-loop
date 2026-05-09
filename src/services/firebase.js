@@ -17,7 +17,7 @@ const messaging = getMessaging(app)
 
 // VAPID key — get this from Firebase Console
 // Project Settings → Cloud Messaging → Web Push certificates
-const VAPID_KEY = "lthNDTOFl2AXL2brvDe9EClKkq1pRr36K3LRUwf1rZM"
+const VAPID_KEY = "BL9rAj_pI6LQiXvCkCuYh81COlHmVQpL93BBRh6j-mD3df5A0wEWS2XEdZdtPvdz4SuRPzwwqyGjs6YUCE3J6O0"
 
 export const requestNotificationPermission = async () => {
   try {
