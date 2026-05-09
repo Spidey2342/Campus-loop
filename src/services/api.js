@@ -302,3 +302,14 @@ export const getMessages = async (conversationId, token, skip = 0) => {
   if (!response || !response.ok) throw new Error("Failed to load messages")
   return response.json()
 }
+
+export const saveFCMToken = async (fcmToken, token) => {
+  await authFetch(`${BASE_URL}/users/fcm-token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ fcm_token: fcmToken }),
+  })
+}
