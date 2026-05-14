@@ -16,6 +16,7 @@ import NotificationsPage from './pages/NotificationsPage'
 import NewMessagePage from './pages/NewMessagePage'
 import MessagesPage from './pages/MessagesPage'
 import ChatPage from './pages/ChatPage'
+import AdminPage from './pages/AdminPage'
 
 
 function App() {
@@ -65,6 +66,10 @@ function App() {
 
 <Route path="/notifications" element={
   <ProtectedRoute><NotificationsPage /></ProtectedRoute>
+} />
+
+<Route path="/admin" element={
+  <ProtectedRoute><AdminPage /></ProtectedRoute>
 } />
 
     </Routes>

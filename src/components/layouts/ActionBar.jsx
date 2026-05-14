@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { Heart, MessageCircle, Share2, Plus, Trash2, MoreVertical } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Plus, Trash2, MoreVertical, Flag } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import CommentDrawer from './CommentDrawer'
+import ReportModal from './ReportModal'
 import { deleteReel } from '../../services/api'
 
 function ActionBar({ reel, isLiked, likesCount, onLike, onDelete }) {
@@ -12,7 +13,8 @@ function ActionBar({ reel, isLiked, likesCount, onLike, onDelete }) {
   const token = localStorage.getItem("token")
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showReport, setShowReport] = useState(false)
 
   // Check if this reel belongs to the logged in user
   const isOwner = currentUser.id === reel.owner_id
@@ -115,31 +117,39 @@ const [isDeleting, setIsDeleting] = useState(false)
           <span className="text-xs mt-1">Share</span>
         </button>
 
-        {/* More options — only show to reel owner */}
-        {isOwner && (
-          <button
-            onClick={(e) => { e.stopPropagation(); setShowOptions(!showOptions) }}
-            className="flex flex-col items-center"
-          >
-            <MoreVertical size={28} />
-          </button>
-        )}
+        {/* More options — owner sees delete, others see report */}
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowOptions(!showOptions) }}
+          className="flex flex-col items-center"
+        >
+          <MoreVertical size={28} />
+        </button>
 
       </div>
 
-      {/* Options menu — slides in when owner taps ⋮ */}
+      {/* Options menu */}
       {showOptions && (
         <div
           className="absolute bottom-24 right-16 bg-gray-900 rounded-xl overflow-hidden z-30 border border-white/10"
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="flex items-center gap-3 px-5 py-3 text-red-400 hover:bg-white/10 w-full text-sm"
-          >
-            <Trash2 size={16} />
-            Delete reel
-          </button>
+          {isOwner ? (
+            <button
+              onClick={() => { setShowOptions(false); setShowDeleteModal(true) }}
+              className="flex items-center gap-3 px-5 py-3 text-red-400 hover:bg-white/10 w-full text-sm"
+            >
+              <Trash2 size={16} />
+              Delete reel
+            </button>
+          ) : (
+            <button
+              onClick={() => { setShowOptions(false); setShowReport(true) }}
+              className="flex items-center gap-3 px-5 py-3 text-orange-400 hover:bg-white/10 w-full text-sm"
+            >
+              <Flag size={16} />
+              Report
+            </button>
+          )}
         </div>
       )}
 {showDeleteModal && (
@@ -192,6 +202,14 @@ const [isDeleting, setIsDeleting] = useState(false)
           token={token}
           onClose={() => setShowComments(false)}
           onCommentAdded={() => setCommentsCount(prev => prev + 1)}
+        />
+      )}
+
+      {/* Report modal */}
+      {showReport && (
+        <ReportModal
+          reelId={reel.id}
+          onClose={() => setShowReport(false)}
         />
       )}
     </>

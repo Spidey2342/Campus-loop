@@ -1,10 +1,13 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MoreVertical, Share2, X, LogOut } from 'lucide-react'
+import { MoreVertical, Share2, X, LogOut, Shield } from 'lucide-react'
+import ReportModal from './ReportModal'
 
-function ProfileHeader({ username, isOwnProfile }) {
+function ProfileHeader({ username, isOwnProfile, profileUserId }) {
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
+  const [showReport, setShowReport] = useState(false)
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
 
   const handleShare = async () => {
     const url = `${window.location.origin}/profile/${username}`
@@ -83,13 +86,21 @@ function ProfileHeader({ username, isOwnProfile }) {
             {/* Report — only on OTHER people's profiles */}
             {!isOwnProfile && (
               <button
-                onClick={() => {
-                  alert("Report submitted. We'll review this account.")
-                  setShowMenu(false)
-                }}
+                onClick={() => { setShowMenu(false); setShowReport(true) }}
                 className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 rounded-xl text-red-400 text-sm"
               >
                 🚩 Report account
+              </button>
+            )}
+
+            {/* Admin panel — only visible to admins on their own profile */}
+            {isOwnProfile && currentUser.is_admin && (
+              <button
+                onClick={() => { setShowMenu(false); navigate("/admin") }}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-teal-900/40 rounded-xl text-teal-400 text-sm"
+              >
+                <Shield size={16} />
+                Moderation panel
               </button>
             )}
 
@@ -112,6 +123,13 @@ function ProfileHeader({ username, isOwnProfile }) {
             </button>
           </div>
         </div>
+      )}
+
+      {showReport && profileUserId && (
+        <ReportModal
+          reportedUserId={profileUserId}
+          onClose={() => setShowReport(false)}
+        />
       )}
     </>
   )

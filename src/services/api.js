@@ -313,3 +313,59 @@ export const saveFCMToken = async (fcmToken, token) => {
     body: JSON.stringify({ fcm_token: fcmToken }),
   })
 }
+
+// --- MODERATION ---
+
+export const reportReel = async ({ reelId, reason, details }, token) => {
+  const response = await authFetch(`${BASE_URL}/moderation/report`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ reel_id: reelId, reason, details }),
+  })
+  if (!response || !response.ok) {
+    const err = await response?.json()
+    throw new Error(err?.detail || "Report failed")
+  }
+  return response.json()
+}
+
+export const reportUser = async ({ reportedUserId, reason, details }, token) => {
+  const response = await authFetch(`${BASE_URL}/moderation/report`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ reported_user_id: reportedUserId, reason, details }),
+  })
+  if (!response || !response.ok) {
+    const err = await response?.json()
+    throw new Error(err?.detail || "Report failed")
+  }
+  return response.json()
+}
+
+export const getReports = async (token, status = "pending") => {
+  const response = await authFetch(
+    `${BASE_URL}/moderation/reports?status=${status}&limit=100`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!response || !response.ok) throw new Error("Failed to load reports")
+  return response.json()
+}
+
+export const reviewReport = async (reportId, status, token) => {
+  const response = await authFetch(`${BASE_URL}/moderation/reports/${reportId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status }),
+  })
+  if (!response || !response.ok) throw new Error("Review failed")
+  return response.json()
+}
