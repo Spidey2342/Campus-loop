@@ -13,7 +13,7 @@ function VideoInfo({ reel }) {
         onClick={() => navigate(`/profile/${reel.owner_username}`)}
       >
         <p className="font-bold">@{reel.owner_username}</p>
-        <span className="text-xs text-teal-400">✔ verified</span>
+        {/* <span className="text-xs text-teal-400"></span> */}
       </div>
 
       {/* School tag */}
