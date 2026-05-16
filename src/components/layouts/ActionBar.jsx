@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Share2, Plus, Trash2, MoreVertical, Flag } from '
 import { useNavigate } from 'react-router-dom'
 import CommentDrawer from './CommentDrawer'
 import ReportModal from './ReportModal'
+import ShareModal from './ShareModal'
 import { deleteReel } from '../../services/api'
 
 function ActionBar({ reel, isLiked, likesCount, onLike, onDelete }) {
@@ -15,6 +16,7 @@ function ActionBar({ reel, isLiked, likesCount, onLike, onDelete }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showReport, setShowReport] = useState(false)
+  const [showShare, setShowShare] = useState(false)
 
   // Check if this reel belongs to the logged in user
   const isOwner = currentUser.id === reel.owner_id
@@ -108,9 +110,9 @@ function ActionBar({ reel, isLiked, likesCount, onLike, onDelete }) {
           </span>
         </button>
 
-        {/* Share — native share sheet on mobile */}
+        {/* Share */}
         <button
-          onClick={(e) => { e.stopPropagation(); handleShare() }}
+          onClick={(e) => { e.stopPropagation(); setShowShare(true) }}
           className="flex flex-col items-center"
         >
           <Share2 size={28} />
@@ -207,10 +209,11 @@ function ActionBar({ reel, isLiked, likesCount, onLike, onDelete }) {
 
       {/* Report modal */}
       {showReport && (
-        <ReportModal
-          reelId={reel.id}
-          onClose={() => setShowReport(false)}
-        />
+        <ReportModal reelId={reel.id} onClose={() => setShowReport(false)} />
+      )}
+
+      {showShare && (
+        <ShareModal reel={reel} onClose={() => setShowShare(false)} />
       )}
     </>
   )
