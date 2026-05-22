@@ -3,6 +3,8 @@ import { Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/layouts/ProtectedRoute'
 import PublicRoute from './components/layouts/PublicRoute'
 import InstallPrompt from './components/InstallPrompt'
+import NotificationToast from './components/layouts/NotificationToast'
+import { useNotifications } from './hooks/useNotifications'
 
 // Pages
 import Login from './pages/Login'
@@ -20,8 +22,12 @@ import AdminPage from './pages/AdminPage'
 
 
 function App() {
+  // Request notification permission + save FCM token once logged in
+  useNotifications()
+
   return (
     <>
+    <NotificationToast />
     <Routes>
 
       {/* Public routes — logged in users get redirected to feed */}
@@ -78,4 +84,4 @@ function App() {
   )
 }
 
-export default App
+export default App  
