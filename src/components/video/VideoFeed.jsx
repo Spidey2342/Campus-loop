@@ -141,6 +141,10 @@ function VideoFeed({ feedType }) {
             reel={reel}
             isActive={index === currentIndex}
             shouldPreload={index >= currentIndex && index <= currentIndex + 2}
+            onNext={index < reels.length - 1 ? () => {
+              const nextEl = containerRef.current
+              if (nextEl) nextEl.scrollTop = (index + 1) * window.innerHeight
+            } : null}
             onDelete={(deletedId) => {
               setReels(prev => prev.filter(r => r.id !== deletedId))
             }}

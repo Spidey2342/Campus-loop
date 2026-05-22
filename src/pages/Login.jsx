@@ -44,8 +44,14 @@ function Login() {
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Success — go to feed
-      navigate("/feed");
+      // Success — go to where they came from or feed
+      const redirect = localStorage.getItem('redirect_after_login')
+      if (redirect) {
+        localStorage.removeItem('redirect_after_login')
+        navigate(redirect)
+      } else {
+        navigate('/feed')
+      }
 
     } catch (err) {
       // Show the error from the server e.g. "Invalid email or password"

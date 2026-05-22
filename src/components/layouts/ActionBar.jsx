@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { Heart, MessageCircle, Share2, Plus, Trash2, MoreVertical, Flag } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Plus, Trash2, MoreVertical, Flag, Download } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import CommentDrawer from './CommentDrawer'
 import ReportModal from './ReportModal'
 import ShareModal from './ShareModal'
 import { deleteReel } from '../../services/api'
 
-function ActionBar({ reel, isLiked, likesCount, onLike, onDelete }) {
+function ActionBar({ reel, isLiked, likesCount, onLike, onDelete, onDownload }) {
   const [showComments, setShowComments] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
   const [commentsCount, setCommentsCount] = useState(reel.comments_count)
@@ -118,6 +118,17 @@ function ActionBar({ reel, isLiked, likesCount, onLike, onDelete }) {
           <Share2 size={28} />
           <span className="text-xs mt-1">Share</span>
         </button>
+
+        {/* Download */}
+        {onDownload && (
+          <button
+            onClick={onDownload}
+            className="flex flex-col items-center"
+          >
+            <Download size={28} />
+            <span className="text-xs mt-1">Save</span>
+          </button>
+        )}
 
         {/* More options — owner sees delete, others see report */}
         <button

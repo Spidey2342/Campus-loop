@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
 import VideoInfo from '../layouts/VideoInfo'
 import ActionBar from '../layouts/ActionBar'
-import { Heart } from 'lucide-react'
+import { Heart, RotateCcw, ChevronDown } from 'lucide-react'
 import { likeReel, viewReel } from '../../services/api'
+import { useNavigate } from 'react-router-dom'
 
-function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
-  const [showHeart, setShowHeart] = useState(false)
-  const [isLiked, setIsLiked] = useState(reel.is_liked)
-  const [likesCount, setLikesCount] = useState(reel.likes_count)
+function VideoCard({ reel, onDelete, isActive, shouldPreload, onNext }) {
+  const [showHeart, setShowHeart]     = useState(false)
+  const [isLiked, setIsLiked]         = useState(reel.is_liked)
+  const [likesCount, setLikesCount]   = useState(reel.likes_count)
   const [viewCounted, setViewCounted] = useState(false)
+  const [ended, setEnded]             = useState(false)
+  const [progress, setProgress]       = useState(0)
   const videoRef = useRef(null)
-  const token = localStorage.getItem("token")
+  const token    = localStorage.getItem('token')
+  const navigate = useNavigate()
   let lastTap = 0
 
   const handleLike = async () => {
@@ -33,9 +37,30 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
     lastTap = now
   }
 
+  const handleReplay = (e) => {
+    e.stopPropagation()
+    setEnded(false)
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0
+      videoRef.current.play().catch(() => {})
+    }
+  }
+
+  const handleTimeUpdate = () => {
+    const v = videoRef.current
+    if (!v || !v.duration) return
+    setProgress((v.currentTime / v.duration) * 100)
+  }
+
+  const handleEnded = () => {
+    setEnded(true)
+  }
+
   useEffect(() => {
     const videoEl = videoRef.current
     if (!videoEl) return
+    setEnded(false)
+    setProgress(0)
 
     if (isActive) {
       videoEl.play().catch(() => {})
@@ -49,23 +74,63 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
     }
   }, [isActive])
 
+  const handleDownload = async (e) => {
+    e.stopPropagation()
+    try {
+      const response = await fetch(reel.video_url)
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `campusvibe-${reel.id}.mp4`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      // Fallback — open in new tab
+      window.open(reel.video_url, '_blank')
+    }
+  }
+
   return (
     <div className="relative h-full w-full bg-black" onClick={handleTap}>
 
+      {/* Double tap heart */}
       {showHeart && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
           <Heart className="text-white animate-ping" size={100} fill="white" />
         </div>
       )}
 
-      <video
-        ref={videoRef}
-        src={reel.video_url}
-        loop
-        playsInline
-        preload={shouldPreload ? "metadata" : "none"}
-        className="h-full w-full object-cover"
-      />
+      {/* Video — no loop so we catch onEnded */}
+      {reel.is_photo ? (
+        <img
+          src={reel.video_url}
+          alt={reel.caption}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          src={reel.video_url}
+          playsInline
+          preload={shouldPreload ? 'metadata' : 'none'}
+          className="h-full w-full object-cover"
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={handleEnded}
+        />
+      )}
+
+      {/* Progress bar — thin line at bottom */}
+      {!reel.is_photo && (
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/20 z-20">
+          <div
+            className="h-full bg-teal-400 transition-all duration-200"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
 
       <VideoInfo reel={reel} />
       <ActionBar
@@ -74,7 +139,74 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload }) {
         likesCount={likesCount}
         onLike={handleLike}
         onDelete={onDelete}
+        onDownload={handleDownload}
       />
+
+      {/* ── End screen — TikTok style ── */}
+      {ended && (
+        <div
+          className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Creator avatar */}
+          <div
+            className="mb-4 cursor-pointer"
+            onClick={() => navigate(`/profile/${reel.owner_username}`)}
+          >
+            {reel.owner_avatar ? (
+              <img
+                src={reel.owner_avatar}
+                className="w-20 h-20 rounded-full object-cover border-2 border-teal-500"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-teal-800 flex items-center justify-center border-2 border-teal-500">
+                <span className="text-white text-2xl font-bold">
+                  {reel.owner_username?.[0]?.toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <p
+            className="text-white font-semibold text-lg mb-1 cursor-pointer"
+            onClick={() => navigate(`/profile/${reel.owner_username}`)}
+          >
+            @{reel.owner_username}
+          </p>
+
+          {reel.owner_school && (
+            <p className="text-gray-400 text-sm mb-6">{reel.owner_school}</p>
+          )}
+
+          {/* Action buttons */}
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={handleReplay}
+              className="flex flex-col items-center gap-1.5 bg-white/10 px-6 py-3 rounded-2xl"
+            >
+              <RotateCcw size={22} className="text-white" />
+              <span className="text-white text-xs">Replay</span>
+            </button>
+
+            {onNext && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onNext() }}
+                className="flex flex-col items-center gap-1.5 bg-teal-500 px-6 py-3 rounded-2xl"
+              >
+                <ChevronDown size={22} className="text-black" />
+                <span className="text-black text-xs font-semibold">Next</span>
+              </button>
+            )}
+          </div>
+
+          {/* Caption */}
+          {reel.caption && (
+            <p className="text-gray-300 text-sm text-center px-8 max-w-xs line-clamp-2">
+              {reel.caption}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,28 +1,35 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import VideoCard from '../components/video/VideoCard'
+import { ReelSkeleton } from '../components/layouts/Skeleton'
 
-const BASE_URL = "https://campus-backend-moz5.onrender.com"
+const BASE_URL = 'https://campus-backend-moz5.onrender.com'
 
 function ReelPage() {
   const { reelId } = useParams()
-  const navigate = useNavigate()
-  const [reel, setReel] = useState(null)
+  const navigate   = useNavigate()
+  const [reel, setReel]       = useState(null)
   const [loading, setLoading] = useState(true)
-  const token = localStorage.getItem("token")
+  const token = localStorage.getItem('token')
 
   useEffect(() => {
     const loadReel = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/reels/${reelId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        if (!response.ok) throw new Error("Reel not found")
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        const response = await fetch(`${BASE_URL}/reels/${reelId}`, { headers })
+
+        if (!response.ok) throw new Error('Reel not found')
         const data = await response.json()
         setReel(data)
       } catch (err) {
         console.error(err)
-        navigate("/feed")
+        // If not logged in, redirect to login with the reel URL saved
+        if (!token) {
+          localStorage.setItem('redirect_after_login', `/reel/${reelId}`)
+          navigate('/login')
+        } else {
+          navigate('/feed')
+        }
       } finally {
         setLoading(false)
       }
@@ -31,8 +38,8 @@ function ReelPage() {
   }, [reelId])
 
   if (loading) return (
-    <div className="h-screen bg-black flex items-center justify-center text-white">
-      <p className="text-gray-400">Loading...</p>
+    <div className="h-screen bg-black">
+      <ReelSkeleton />
     </div>
   )
 
@@ -46,7 +53,7 @@ function ReelPage() {
       >
         ←
       </button>
-      <VideoCard reel={reel} />
+      <VideoCard reel={reel} isActive={true} />
     </div>
   )
 }
