@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MoreVertical, Share2, X, LogOut, Shield } from 'lucide-react'
+import { MoreVertical, Share2, X, LogOut, Shield, Crown } from 'lucide-react'
 import ReportModal from './ReportModal'
 
-function ProfileHeader({ username, isOwnProfile, profileUserId }) {
+function ProfileHeader({ username, isOwnProfile, profileUserId, isFoundingMember }) {
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
   const [showReport, setShowReport] = useState(false)
@@ -46,9 +46,17 @@ function ProfileHeader({ username, isOwnProfile, profileUserId }) {
           ←
         </button>
 
-        <h2 className="font-semibold text-white">
-          @{username || "profile"}
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold text-white">
+            @{username || 'profile'}
+          </h2>
+          {isFoundingMember && (
+            <div className="flex items-center gap-1 bg-yellow-400/20 border border-yellow-400/40 px-2 py-0.5 rounded-full">
+              <Crown size={10} className="text-yellow-400" />
+              <span className="text-yellow-400 text-xs font-semibold">Founder</span>
+            </div>
+          )}
+        </div>
 
         <button
           onClick={() => setShowMenu(true)}
