@@ -19,6 +19,7 @@ import NewMessagePage from './pages/NewMessagePage'
 import MessagesPage from './pages/MessagesPage'
 import ChatPage from './pages/ChatPage'
 import AdminPage from './pages/AdminPage'
+import HashtagPage from './pages/HashtagPage'
 
 
 function App() {
@@ -78,10 +79,14 @@ function App() {
   <ProtectedRoute><AdminPage /></ProtectedRoute>
 } />
 
+<Route path="/hashtag/:tag" element={
+  <ProtectedRoute><HashtagPage /></ProtectedRoute>
+} />
+
     </Routes>
      <InstallPrompt />
      </>
   )
 }
 
-export default App  
+export default App
