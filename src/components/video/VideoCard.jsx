@@ -74,22 +74,51 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload, onNext }) {
     }
   }, [isActive])
 
+  const getBrandedDownloadUrl = () => {
+    const url = reel.video_url
+    if (!url || !url.includes('cloudinary.com')) return url
+
+    // Extract everything after /upload/
+    // e.g. https://res.cloudinary.com/mycloud/video/upload/campusvibe/reels/abc.mp4
+    const uploadIndex = url.indexOf('/upload/')
+    if (uploadIndex === -1) return url
+
+    const base      = url.substring(0, uploadIndex + 8) // up to and including /upload/
+    const assetPath = url.substring(uploadIndex + 8)    // campusvibe/reels/abc.mp4
+
+    // Cloudinary transformation string — applied at delivery time, no re-encoding
+    const transforms = [
+      // CampusVibe text watermark — bottom right, semi-transparent white
+      'l_text:Arial_36_bold:CampusVibe,co_white,o_70,g_south_east,x_16,y_16',
+      // Subtle dark scrim behind text so it's readable on any background
+      'l_text:Arial_36_bold:CampusVibe,co_black,o_30,g_south_east,x_18,y_18',
+      // campus-loop.vercel.app in smaller text just above
+      'l_text:Arial_22:campus-loop-peach.vercel.app,co_white,o_50,g_south_east,x_16,y_58',
+      // Force download with fl_attachment
+      'fl_attachment:campusvibe',
+    ].join('/')
+
+    return `${base}${transforms}/${assetPath}`
+  }
+
   const handleDownload = async (e) => {
     e.stopPropagation()
+    const brandedUrl = getBrandedDownloadUrl()
     try {
-      const response = await fetch(reel.video_url)
+      // Use fetch for same-origin or CORS-friendly URLs
+      const response = await fetch(brandedUrl)
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `campusvibe-${reel.id}.mp4`
+      a.download = `campusvibe-${reel.owner_username || 'reel'}.mp4`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch {
-      // Fallback — open in new tab
-      window.open(reel.video_url, '_blank')
+      // Fallback — let Cloudinary serve it directly with fl_attachment
+      window.open(brandedUrl, '_blank')
     }
   }
 
