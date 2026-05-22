@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Edit, Search, Users } from 'lucide-react'
-import { getConversations } from '../services/api'
+import { ConversationSkeleton } from '../components/layouts/Skeleton'
 import BottomNav from '../components/layouts/BottomNav'
 
 function MessagesPage() {
@@ -74,8 +74,8 @@ function MessagesPage() {
 
       {/* Conversations list */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+        <div className="divide-y divide-white/5">
+          {Array.from({ length: 7 }).map((_, i) => <ConversationSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">

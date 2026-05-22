@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Heart, MessageCircle, UserPlus, Bell } from 'lucide-react'
 import { getNotifications, markNotificationsRead } from '../services/api'
 import BottomNav from '../components/layouts/BottomNav'
+import { NotificationSkeleton } from '../components/layouts/Skeleton'
 
 function NotificationsPage() {
   const [notifications, setNotifications] = useState([])
@@ -62,8 +63,8 @@ function NotificationsPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <p className="text-gray-400">Loading...</p>
+        <div className="divide-y divide-white/5">
+          {Array.from({ length: 6 }).map((_, i) => <NotificationSkeleton key={i} />)}
         </div>
       ) : notifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">

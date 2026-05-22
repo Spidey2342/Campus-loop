@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Search, X, ArrowLeft, Users } from "lucide-react"
 import BottomNav from "../components/layouts/BottomNav"
+import { SchoolCardSkeleton, TrendingSkeleton, UserRowSkeleton } from "../components/layouts/Skeleton"
 import {
   getTopSchools, getTrendingTags, searchAll,
   getSchoolDetail, getReelsByHashtag, followUser
@@ -20,6 +21,7 @@ function DiscoverPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState(null)
   const [searching, setSearching] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
 
   // School detail view
   const [selectedSchool, setSelectedSchool] = useState(null)
@@ -45,6 +47,8 @@ function DiscoverPage() {
         setTrending(Array.isArray(trendingData) ? trendingData : [])
       } catch (err) {
         console.error(err)
+      } finally {
+        setInitialLoading(false)
       }
     }
     load()
@@ -131,8 +135,10 @@ function DiscoverPage() {
         </div>
 
         {loadingTag ? (
-          <div className="flex items-center justify-center py-20">
-            <p className="text-gray-400">Loading reels...</p>
+          <div className="divide-y divide-white/5 p-4 space-y-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse bg-white/10 rounded-xl aspect-[9/16]" />
+            ))}
           </div>
         ) : tagReels.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
@@ -188,8 +194,15 @@ function DiscoverPage() {
         </div>
 
         {loadingSchool ? (
-          <div className="flex items-center justify-center py-20">
-            <p className="text-gray-400">Loading school...</p>
+          <div className="px-4 py-4 space-y-4">
+            <div className="grid grid-cols-3 gap-1">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="animate-pulse bg-white/10 rounded-xl h-32" />
+              ))}
+            </div>
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => <UserRowSkeleton key={i} />)}
+            </div>
           </div>
         ) : schoolDetail ? (
           <div className="px-4 py-4 space-y-6">
@@ -450,7 +463,16 @@ function DiscoverPage() {
       ) : (
         <>
           {/* Top Schools */}
-          {schools.length > 0 && (
+          {initialLoading ? (
+            <div className="mb-6">
+              <div className="flex justify-between mb-3">
+                <div className="animate-pulse bg-white/10 rounded w-24 h-5" />
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-1">
+                {Array.from({ length: 5 }).map((_, i) => <SchoolCardSkeleton key={i} />)}
+              </div>
+            </div>
+          ) : schools.length > 0 && (
             <div className="mb-6">
               <div className="flex justify-between mb-3">
                 <h2 className="font-semibold">Top Schools</h2>
@@ -476,7 +498,12 @@ function DiscoverPage() {
           )}
 
           {/* Trending hashtags */}
-          {trending.length > 0 && (
+          {initialLoading ? (
+            <div className="space-y-3">
+              <div className="animate-pulse bg-white/10 rounded w-20 h-5 mb-3" />
+              {Array.from({ length: 4 }).map((_, i) => <TrendingSkeleton key={i} />)}
+            </div>
+          ) : trending.length > 0 && (
             <div>
               <div className="flex justify-between mb-3">
                 <h2 className="font-semibold">Trending</h2>
