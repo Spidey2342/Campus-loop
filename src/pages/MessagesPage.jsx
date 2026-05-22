@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Edit, Search, Users } from 'lucide-react'
 import { ConversationSkeleton } from '../components/layouts/Skeleton'
 import BottomNav from '../components/layouts/BottomNav'
+import { getConversations } from '../services/api'
 
 function MessagesPage() {
   const [conversations, setConversations] = useState([])

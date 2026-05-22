@@ -99,9 +99,22 @@ function VideoFeed({ feedType }) {
   }
 
   if (loading && reels.length === 0) return (
-    <div className="h-full flex flex-col items-center justify-center text-white gap-4">
-      <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
-      <p className="text-gray-400 text-sm">Loading reels...</p>
+    <div className="h-full flex flex-col items-center justify-center text-white gap-5 bg-black">
+      {/* Rotating play button — distinct CampusVibe loading indicator */}
+      <div className="relative w-20 h-20">
+        {/* Outer rotating ring */}
+        <div className="absolute inset-0 rounded-full border-4 border-teal-500/30 border-t-teal-500 animate-spin" />
+        {/* Inner play icon */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center">
+            <div className="w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-l-[12px] border-l-black ml-1" />
+          </div>
+        </div>
+      </div>
+      <div className="text-center">
+        <p className="text-white font-semibold text-sm">CampusVibe</p>
+        <p className="text-gray-500 text-xs mt-1">Loading your feed...</p>
+      </div>
     </div>
   )
 
