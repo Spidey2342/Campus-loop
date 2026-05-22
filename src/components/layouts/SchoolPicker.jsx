@@ -50,21 +50,21 @@ function SchoolPicker({ value, onChange, placeholder = "Search your university..
 
     setLoading(true)
     try {
+      const token = localStorage.getItem('token')
       const res = await fetch(
-        `https://universities.hipolabs.com/search?name=${encodeURIComponent(q)}&limit=8`
+        `https://campus-backend-moz5.onrender.com/discover/universities?q=${encodeURIComponent(q)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       )
       const data = await res.json()
-
-      // Sort: exact matches first, then alphabetical
-      const sorted = data.sort((a, b) => {
+      const sorted = Array.isArray(data) ? data.sort((a, b) => {
         const aExact = a.name.toLowerCase().startsWith(q.toLowerCase())
         const bExact = b.name.toLowerCase().startsWith(q.toLowerCase())
         if (aExact && !bExact) return -1
         if (!aExact && bExact) return 1
         return a.name.localeCompare(b.name)
-      })
+      }) : []
 
-      setResults(sorted.slice(0, 8))
+      setResults(sorted)
       setOpen(sorted.length > 0)
     } catch (err) {
       console.error('School search failed:', err)
