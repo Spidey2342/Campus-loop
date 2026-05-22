@@ -2,7 +2,8 @@ import React from 'react'
 import { useState } from 'react';
 import { Video } from 'lucide-react'
 import { useNavigate } from "react-router-dom";
-import { registerUser } from '../services/api'; // 👈 add this
+import { registerUser } from '../services/api';
+import SchoolPicker from '../components/layouts/SchoolPicker';
 
 function SignUp() {
   const navigate = useNavigate();
@@ -14,7 +15,6 @@ function SignUp() {
     password: "",
   });
 
-  // Add these two new state variables
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,40 +23,44 @@ function SignUp() {
   };
 
   const handleSignup = async () => {
-  setError("")
+    setError("")
 
-  if (!form.username || !form.email || !form.password) {
-    setError("Please fill in all fields")
-    return
+    if (!form.username || !form.email || !form.password) {
+      setError("Please fill in all fields")
+      return
+    }
+
+    if (!form.school) {
+      setError("Please select your school")
+      return
+    }
+
+    const cleanUsername = form.username
+      .replace("@", "")
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9._]/g, "")
+
+    setLoading(true)
+
+    try {
+      const data = await registerUser({
+        full_name: form.username,
+        username: cleanUsername,
+        email: form.email,
+        password: form.password,
+        school_name: form.school,
+      })
+
+      localStorage.setItem("token", data.access_token)
+      localStorage.setItem("user", JSON.stringify(data.user))
+      navigate("/feed")
+
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
-
-  // Clean username — remove @ and replace spaces with underscores
-  const cleanUsername = form.username
-    .replace("@", "")
-    .replace(/\s+/g, "_")
-    .replace(/[^a-zA-Z0-9._]/g, "") // remove any other special characters
-
-  setLoading(true)
-
-  try {
-    const data = await registerUser({
-      full_name: form.username,
-      username: cleanUsername,  // 👈 use cleaned username
-      email: form.email,
-      password: form.password,
-      school_name: form.school,
-    })
-
-    localStorage.setItem("token", data.access_token)
-    localStorage.setItem("user", JSON.stringify(data.user))
-    navigate("/feed")
-
-  } catch (err) {
-    setError(err.message)
-  } finally {
-    setLoading(false)
-  }
-}
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-black via-gray-900 to-teal-900 text-white flex flex-col items-center justify-between px-2 py-8'>
@@ -73,7 +77,6 @@ function SignUp() {
         Create your account and connect with your campus
       </p>
 
-      {/* forms */}
       <div className='w-full bg-white/10 max-w-md space-y-4 flex flex-col justify-center items-center rounded-2xl border-1 border-white/30 align-middle px-1.5'>
 
         <div className='w-[95%] mt-6'>
@@ -88,12 +91,10 @@ function SignUp() {
 
         <div className='w-[95%]'>
           <p className='font-small text-white/70 text-sm'>SCHOOL:</p>
-          <input
-            type="text"
-            name="school"
-            placeholder="Your School"
-            onChange={handleChange}
-            className="w-full p-4 rounded-xl bg-white/10 outline-none"
+          <SchoolPicker
+            value={form.school}
+            onChange={(name) => setForm({ ...form, school: name })}
+            placeholder="Search your university..."
           />
         </div>
 
@@ -119,7 +120,6 @@ function SignUp() {
           />
         </div>
 
-        {/* Show error message if something goes wrong */}
         {error && (
           <div className="w-[95%] bg-red-500/20 border border-red-500/50 text-red-300 text-sm px-4 py-3 rounded-xl">
             {error}
@@ -131,13 +131,11 @@ function SignUp() {
           disabled={loading}
           className="w-full bg-teal-600 hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed py-4 rounded-2xl font-semibold mb-4 transition-all"
         >
-          {/* Button text changes based on loading state */}
           {loading ? "Creating account..." : "Sign Up →"}
         </button>
 
       </div>
 
-      {/* login */}
       <p className="text-gray-400 mt-6">
         Already have an account?{" "}
         <span

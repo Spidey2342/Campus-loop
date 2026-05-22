@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { editProfile } from '../../services/api'
 import { Camera } from 'lucide-react'
+import SchoolPicker from './SchoolPicker'
 
 function EditProfileModal({ profile, token, onClose, onSave }) {
   const [form, setForm] = useState({
@@ -129,7 +130,6 @@ function EditProfileModal({ profile, token, onClose, onSave }) {
         {[
           { label: "Full name", name: "full_name", placeholder: "Your full name" },
           { label: "Bio", name: "bio", placeholder: "Tell your campus about yourself" },
-          { label: "School", name: "school_name", placeholder: "Your school name" },
           { label: "Programme", name: "programme", placeholder: "e.g. BSc Computer Science" },
           { label: "Year", name: "year_of_study", placeholder: "e.g. Year 2" },
         ].map(({ label, name, placeholder }) => (
@@ -144,6 +144,16 @@ function EditProfileModal({ profile, token, onClose, onSave }) {
             />
           </div>
         ))}
+
+        {/* School — separate with SchoolPicker */}
+        <div>
+          <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">School</p>
+          <SchoolPicker
+            value={form.school_name}
+            onChange={(name) => setForm({ ...form, school_name: name })}
+            placeholder="Search your university..."
+          />
+        </div>
 
         {error && (
           <p className="text-red-400 text-sm bg-red-500/10 px-3 py-2 rounded-xl">
