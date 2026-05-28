@@ -11,13 +11,25 @@ function FoundingStrip() {
 
   useEffect(() => {
     const load = async () => {
+      // Use cached version if less than 10 minutes old
+      const cached = localStorage.getItem('founding_members')
+      const cachedAt = localStorage.getItem('founding_members_at')
+      if (cached && cachedAt && Date.now() - parseInt(cachedAt) < 10 * 60 * 1000) {
+        setMembers(JSON.parse(cached))
+        setLoading(false)
+        return
+      }
+
       try {
         const token = localStorage.getItem('token')
         const res = await fetch(`${BASE_URL}/users/founding-members`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
         const data = await res.json()
-        setMembers(Array.isArray(data) ? data : [])
+        const members = Array.isArray(data) ? data : []
+        setMembers(members)
+        localStorage.setItem('founding_members', JSON.stringify(members))
+        localStorage.setItem('founding_members_at', Date.now().toString())
       } catch (err) {
         console.error(err)
       } finally {
