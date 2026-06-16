@@ -117,7 +117,10 @@ function Login() {
 
         {/* Forgot password — good UX to have early */}
         <div className="w-[95%] text-right">
-          <span className="text-teal-400 text-sm cursor-pointer hover:underline">
+          <span
+            onClick={() => navigate("/forgot-password")}
+            className="text-teal-400 text-sm cursor-pointer hover:underline"
+          >
             Forgot password?
           </span>
         </div>

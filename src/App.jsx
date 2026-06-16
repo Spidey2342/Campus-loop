@@ -8,6 +8,8 @@ import { useNotifications } from './hooks/useNotifications'
 
 // Pages
 import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import SignUp from './pages/SignUp'
 import Feedpage from './pages/Feedpage'
 import UploadPage from './pages/UploadPage'
@@ -41,6 +43,8 @@ function App() {
       <Route path="/signup" element={
         <PublicRoute><SignUp /></PublicRoute>
       } />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Protected routes — logged out users get redirected to login */}
       <Route path="/feed" element={

@@ -15,8 +15,12 @@ function Profilepage() {
   const [profile, setProfile] = useState(null)
   const [reels, setReels] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [skip, setSkip] = useState(0)
   const [showEditModal, setShowEditModal] = useState(false)
 
+  const PAGE_SIZE = 21
   const token = localStorage.getItem("token")
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
   const profileUsername = username || currentUser.username
@@ -25,12 +29,17 @@ function Profilepage() {
     const loadProfile = async () => {
       try {
         setLoading(true)
+        setSkip(0)
+        setHasMore(true)
         const [profileData, reelsData] = await Promise.all([
           getProfile(profileUsername, token),
-          getUserReels(profileUsername, token),
+          getUserReels(profileUsername, token, 0, PAGE_SIZE),
         ])
         setProfile(profileData)
-        setReels(Array.isArray(reelsData) ? reelsData : [])
+        const safeReels = Array.isArray(reelsData) ? reelsData : []
+        setReels(safeReels)
+        setSkip(safeReels.length)
+        setHasMore(safeReels.length === PAGE_SIZE)
       } catch (err) {
         console.error(err)
         // Don't redirect to login on profile not found
@@ -42,6 +51,22 @@ function Profilepage() {
     }
     loadProfile()
   }, [profileUsername])
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    try {
+      const data = await getUserReels(profileUsername, token, skip, PAGE_SIZE)
+      const safeData = Array.isArray(data) ? data : []
+      setReels(prev => [...prev, ...safeData])
+      setSkip(prev => prev + safeData.length)
+      setHasMore(safeData.length === PAGE_SIZE)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   if (loading) return (
     <div className="min-h-screen bg-black text-white">
@@ -80,7 +105,12 @@ function Profilepage() {
           onEditClick={() => setShowEditModal(true)}
         />
         <Highlights />
-        <VideoGrid reels={reels} />
+        <VideoGrid
+          reels={reels}
+          onLoadMore={handleLoadMore}
+          hasMore={hasMore}
+          loadingMore={loadingMore}
+        />
       </div>
 
       {showEditModal && (

@@ -86,8 +86,8 @@ export const getProfile = async (username, token) => {
   return response.json();
 };
 
-export const getUserReels = async (username, token) => {
-  const response = await fetch(`${BASE_URL}/users/profile/${username}/reels`, {
+export const getUserReels = async (username, token, skip = 0, limit = 21) => {
+  const response = await fetch(`${BASE_URL}/users/profile/${username}/reels?skip=${skip}&limit=${limit}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) throw new Error("Failed to load reels");

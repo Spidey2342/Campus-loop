@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import VideoFeed from '../components/video/VideoFeed'
 import TopBar from '../components/layouts/TopBar'
 import BottomNav from '../components/layouts/BottomNav'
-import FoundingStrip from '../components/layouts/FoundingStrip'
 
 function Feedpage() {
   const [feedType, setFeedType] = useState("foryou")
@@ -10,7 +9,7 @@ function Feedpage() {
   return (
     <div className='h-screen w-full bg-black overflow-hidden flex flex-col'>
       <TopBar feedType={feedType} onTabChange={setFeedType} />
-      <FoundingStrip />
+     
       <div className="flex-1 overflow-hidden">
         <VideoFeed feedType={feedType} />
       </div>
