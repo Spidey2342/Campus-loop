@@ -1,32 +1,13 @@
-import React, { useState, useEffect } from 'react'
-import { Home, Compass, Plus, Bell, User, MessageCircle } from "lucide-react"
+import React, { useState } from 'react'
+import { Home, Compass, Plus, ShoppingBag, User, MessageCircle } from "lucide-react"
 import { useNavigate, useLocation } from 'react-router-dom'
-import { getUnreadCount } from '../../services/api'
 
 function BottomNav() {
   const navigate = useNavigate()
   const location = useLocation()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
-  const token = localStorage.getItem("token")
 
   const isActive = (path) => location.pathname.startsWith(path)
-
-  // Poll for unread notifications every 30 seconds
-  useEffect(() => {
-  const fetchCount = async () => {
-    try {
-      const data = await getUnreadCount(token)
-      setUnreadCount(data?.unread_count || 0)
-    } catch {
-      // Server sleeping — ignore silently
-    }
-  }
-
-  fetchCount()
-  const interval = setInterval(fetchCount, 60000) // every 60s not 30s
-  return () => clearInterval(interval)
-}, [])
 
   const handleLogout = () => {
     localStorage.clear()
@@ -61,33 +42,21 @@ function BottomNav() {
         >
           <Plus className="text-black" size={22} />
         </button>
-<button
-  onClick={() => navigate("/messages")}
-  className={`flex flex-col items-center gap-0.5 ${isActive("/messages") ? "text-teal-400" : "text-gray-400"}`}
->
-  <MessageCircle size={22} />
-  <span className="text-xs">Messages</span>
-</button>
 
-        {/* Notifications bell with unread badge */}
         <button
-          onClick={() => {
-            setUnreadCount(0)
-            navigate("/notifications")
-          }}
-          className={`flex flex-col items-center gap-0.5 relative ${isActive("/notifications") ? "text-teal-400" : "text-gray-400"}`}
+          onClick={() => navigate("/messages")}
+          className={`flex flex-col items-center gap-0.5 ${isActive("/messages") ? "text-teal-400" : "text-gray-400"}`}
         >
-          <div className="relative">
-            <Bell size={22} />
-            {unreadCount > 0 && (
-              <div className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
-                <span className="text-white text-[9px] font-bold">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              </div>
-            )}
-          </div>
-          <span className="text-xs">Activity</span>
+          <MessageCircle size={22} />
+          <span className="text-xs">Messages</span>
+        </button>
+
+        <button
+          onClick={() => navigate("/marketplace")}
+          className={`flex flex-col items-center gap-0.5 ${isActive("/marketplace") ? "text-teal-400" : "text-gray-400"}`}
+        >
+          <ShoppingBag size={22} />
+          <span className="text-xs">Market</span>
         </button>
 
         <button
@@ -99,7 +68,6 @@ function BottomNav() {
         </button>
       </div>
 
-      {/* Logout modal — triggered from profile page settings */}
       {showLogoutModal && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-6"

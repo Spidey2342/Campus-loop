@@ -22,6 +22,9 @@ import MessagesPage from './pages/MessagesPage'
 import ChatPage from './pages/ChatPage'
 import AdminPage from './pages/AdminPage'
 import HashtagPage from './pages/HashtagPage'
+import MarketplacePage from './pages/MarketplacePage'
+import ListingDetailPage from './pages/ListingDetailPage'
+import CreateListingPage from './pages/CreateListingPage'
 
 
 function App() {
@@ -85,6 +88,16 @@ function App() {
 
 <Route path="/hashtag/:tag" element={
   <ProtectedRoute><HashtagPage /></ProtectedRoute>
+} />
+
+<Route path="/marketplace" element={
+  <ProtectedRoute><MarketplacePage /></ProtectedRoute>
+} />
+<Route path="/marketplace/new" element={
+  <ProtectedRoute><CreateListingPage /></ProtectedRoute>
+} />
+<Route path="/marketplace/:listingId" element={
+  <ProtectedRoute><ListingDetailPage /></ProtectedRoute>
 } />
 
     </Routes>

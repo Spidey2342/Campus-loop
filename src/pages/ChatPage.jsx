@@ -1,13 +1,21 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Send, Plus, MoreVertical } from 'lucide-react'
+import { ArrowLeft, Send, Plus, MoreVertical, Hand, ShoppingBag, CheckCheck } from 'lucide-react'
 import { getMessages } from '../services/api'
+import { getListingContext, getListingMessages, sendListingMessage } from '../services/marketplaceApi'
 
 const BASE_URL = "https://campus-backend-moz5.onrender.com"
 
 function ChatPage() {
   const { conversationId } = useParams()
   const navigate = useNavigate()
+
+  // Listing chats are mocked locally until the backend supports them —
+  // see the comment block above getListingMessages in marketplaceApi.js.
+  // Swapping to a real backend-tagged conversation later just means
+  // deleting this flag and the branches that check it below.
+  const isMockThread = conversationId?.startsWith("listing-")
+  const listingContext = isMockThread ? getListingContext(conversationId) : null
 
   // ✅ All state at the top — nothing inside other functions
   const [messages, setMessages] = useState([])
@@ -26,7 +34,9 @@ function ChatPage() {
   // ✅ loadMessages is a clean standalone function
   const loadMessages = async (initial = false) => {
     try {
-      const data = await getMessages(conversationId, token)
+      const data = isMockThread
+        ? await getListingMessages(conversationId)
+        : await getMessages(conversationId, token)
       const safeData = Array.isArray(data) ? data : []
 
       if (initial) {
@@ -52,16 +62,26 @@ function ChatPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        // Get conversation info to show name in header
-        const convResponse = await fetch(
-          `${BASE_URL}/messages/conversations`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-        const convData = await convResponse.json()
-        const thisConv = Array.isArray(convData)
-          ? convData.find(c => c.id === conversationId)
-          : null
-        setConvInfo(thisConv)
+        if (isMockThread) {
+          // Seller name/avatar comes from the listing snapshot, not the
+          // real conversations endpoint (this thread doesn't exist there).
+          setConvInfo({
+            name: listingContext?.seller_username ? `@${listingContext.seller_username}` : "Seller",
+            avatar_url: null,
+            username: listingContext?.seller_username,
+          })
+        } else {
+          // Get conversation info to show name in header
+          const convResponse = await fetch(
+            `${BASE_URL}/messages/conversations`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+          const convData = await convResponse.json()
+          const thisConv = Array.isArray(convData)
+            ? convData.find(c => c.id === conversationId)
+            : null
+          setConvInfo(thisConv)
+        }
 
         // Load messages
         await loadMessages(true)
@@ -73,8 +93,10 @@ function ChatPage() {
     load()
   }, [conversationId])
 
-  // ✅ Poll every 3 seconds for new messages
+  // ✅ Poll every 3 seconds for new messages (skip polling for mock threads —
+  // nothing external can write to them, so there's nothing new to catch)
   useEffect(() => {
+    if (isMockThread) return
     const interval = setInterval(() => {
       loadMessages(false)
     }, 3000)
@@ -107,19 +129,24 @@ function ChatPage() {
     setMessages(prev => [...prev, optimistic])
 
     try {
-      const response = await fetch(
-        `${BASE_URL}/messages/conversations/${conversationId}/send`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ text: messageText }),
-        }
-      )
-      if (response.ok) {
+      if (isMockThread) {
+        await sendListingMessage(conversationId, messageText)
         await loadMessages(false)
+      } else {
+        const response = await fetch(
+          `${BASE_URL}/messages/conversations/${conversationId}/send`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ text: messageText }),
+          }
+        )
+        if (response.ok) {
+          await loadMessages(false)
+        }
       }
     } catch (err) {
       console.error(err)
@@ -201,6 +228,26 @@ function ChatPage() {
         </button>
       </div>
 
+      {/* Pinned listing card — keeps buyer/seller anchored to what they're discussing */}
+      {listingContext && (
+        <button
+          onClick={() => navigate(`/marketplace/${listingContext.listing_id}`)}
+          className="flex items-center gap-3 px-4 py-2.5 border-b border-white/10 bg-white/5 text-left flex-shrink-0"
+        >
+          <div className="w-9 h-9 rounded-lg bg-teal-900 flex items-center justify-center flex-shrink-0">
+            {listingContext.thumbnail ? (
+              <img src={listingContext.thumbnail} className="w-full h-full object-cover rounded-lg" />
+            ) : (
+              <ShoppingBag size={16} className="text-teal-400" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{listingContext.title}</p>
+            <p className="text-xs text-teal-400">{listingContext.currency} {listingContext.price}</p>
+          </div>
+        </button>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {loading ? (
@@ -209,7 +256,7 @@ function ChatPage() {
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <p className="text-3xl">👋</p>
+            <Hand size={28} className="text-gray-500" />
             <p className="text-gray-400 text-sm">Say hello!</p>
           </div>
         ) : (
@@ -277,7 +324,7 @@ function ChatPage() {
                       <p className="text-xs text-gray-500 mt-1 px-1">
                         {formatTime(msg.created_at)}
                         {isMine && (
-                          <span className="ml-1 text-teal-400">✓✓</span>
+                          <CheckCheck size={12} className="inline ml-1 text-teal-400" />
                         )}
                       </p>
                     </div>

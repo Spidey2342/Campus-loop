@@ -1,12 +1,47 @@
-import React from 'react'
-import { Search } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Search, Bell } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { getUnreadCount } from '../../services/api'
 
 function TopBar({ feedType, onTabChange }) {
   const navigate = useNavigate()
+  const [unreadCount, setUnreadCount] = useState(0)
+  const token = localStorage.getItem("token")
+
+  // Poll for unread notifications every 60 seconds
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const data = await getUnreadCount(token)
+        setUnreadCount(data?.unread_count || 0)
+      } catch {
+        // Server sleeping — ignore silently
+      }
+    }
+    fetchCount()
+    const interval = setInterval(fetchCount, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="absolute top-0 left-0 w-full z-50 flex items-center justify-between px-4 py-4 text-white">
+
+      <button
+        onClick={() => {
+          setUnreadCount(0)
+          navigate("/notifications")
+        }}
+        className="relative"
+      >
+        <Bell size={22} />
+        {unreadCount > 0 && (
+          <div className="absolute -top-1.5 -right-1.5 bg-red-500 rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+            <span className="text-white text-[9px] font-bold">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          </div>
+        )}
+      </button>
 
       <div className="flex gap-4 mx-auto">
         <button
@@ -33,7 +68,7 @@ function TopBar({ feedType, onTabChange }) {
       </div>
 
       <Search
-        className="absolute right-4 top-4 cursor-pointer"
+        className="cursor-pointer"
         onClick={() => navigate("/discover")}
       />
     </div>
