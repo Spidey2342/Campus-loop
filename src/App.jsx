@@ -23,6 +23,7 @@ import ChatPage from './pages/ChatPage'
 import AdminPage from './pages/AdminPage'
 import HashtagPage from './pages/HashtagPage'
 import MarketplacePage from './pages/MarketplacePage'
+import BecomeSellerPage from './pages/BecomeSellerPage'
 import ListingDetailPage from './pages/ListingDetailPage'
 import CreateListingPage from './pages/CreateListingPage'
 
@@ -95,6 +96,9 @@ function App() {
 } />
 <Route path="/marketplace/new" element={
   <ProtectedRoute><CreateListingPage /></ProtectedRoute>
+} />
+<Route path="/marketplace/become-seller" element={
+  <ProtectedRoute><BecomeSellerPage /></ProtectedRoute>
 } />
 <Route path="/marketplace/:listingId" element={
   <ProtectedRoute><ListingDetailPage /></ProtectedRoute>

@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ImagePlus, X } from 'lucide-react'
-import { createListing, CATEGORIES } from '../services/marketplaceApi'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { ArrowLeft, ImagePlus, X, Clock } from 'lucide-react'
+import { createListing, CATEGORIES, getSellerStatus } from '../services/marketplaceApi'
 
 const SELLABLE_CATEGORIES = CATEGORIES.filter((c) => c !== "All")
 
 function CreateListingPage() {
   const navigate = useNavigate()
   const token = localStorage.getItem("token")
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
+  const sellerStatus = getSellerStatus(currentUser)
 
   const [title, setTitle] = useState("")
   const [price, setPrice] = useState("")
@@ -34,6 +36,13 @@ function CreateListingPage() {
 
   const isValid = title.trim() && price && Number(price) > 0 && description.trim()
 
+  // Defense in depth — the Marketplace "+" button already routes non-sellers
+  // to /marketplace/become-seller, but someone could still hit this URL
+  // directly (bookmark, back button, etc).
+  if (!sellerStatus.isSeller) {
+    return <Navigate to="/marketplace/become-seller" replace />
+  }
+
   const handleSubmit = async () => {
     if (!isValid || submitting) return
     setSubmitting(true)
@@ -57,7 +66,13 @@ function CreateListingPage() {
         <button onClick={() => navigate(-1)}>
           <ArrowLeft size={20} />
         </button>
-        <h1 className="font-semibold text-lg">New Listing</h1>
+        <h1 className="font-semibold text-lg flex-1">New Listing</h1>
+        {sellerStatus.source === "trial" && (
+          <div className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 rounded-full">
+            <Clock size={12} />
+            {sellerStatus.daysLeft} {sellerStatus.daysLeft === 1 ? "day" : "days"} left
+          </div>
+        )}
       </div>
 
       <div className="px-4 py-5 space-y-6">

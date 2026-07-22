@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Plus, X } from 'lucide-react'
+import { Search, Plus, X, ShoppingBag, ChevronRight } from 'lucide-react'
 import BottomNav from '../components/layouts/BottomNav'
 import ListingCard from '../components/layouts/ListingCard'
-import { getListings, CATEGORIES } from '../services/marketplaceApi'
+import { getListings, CATEGORIES, getSellerStatus } from '../services/marketplaceApi'
 
 function ListingSkeleton() {
   return (
@@ -27,6 +27,12 @@ function MarketplacePage() {
   const [query, setQuery] = useState("")
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
+
+  const sellerStatus = getSellerStatus(currentUser)
+
+  const handlePostClick = () => {
+    navigate(sellerStatus.isSeller ? "/marketplace/new" : "/marketplace/become-seller")
+  }
 
   useEffect(() => {
     let active = true
@@ -59,7 +65,7 @@ function MarketplacePage() {
             <p className="text-xs text-gray-400">Buy and sell with your campus</p>
           </div>
           <button
-            onClick={() => navigate("/marketplace/new")}
+            onClick={handlePostClick}
             className="bg-teal-500 text-black rounded-full p-2.5 flex-shrink-0"
           >
             <Plus size={18} />
@@ -113,6 +119,25 @@ function MarketplacePage() {
         </button>
       </div>
 
+      {/* Become-a-seller nudge — only for users who aren't sellers yet */}
+      {!sellerStatus.isSeller && (
+        <div className="px-4 pt-4">
+          <button
+            onClick={() => navigate("/marketplace/become-seller")}
+            className="w-full flex items-center gap-3 bg-teal-500/10 border border-teal-500/25 rounded-xl px-4 py-3.5 text-left"
+          >
+            <div className="w-9 h-9 rounded-lg bg-teal-500/20 flex items-center justify-center flex-shrink-0">
+              <ShoppingBag size={16} className="text-teal-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">Got something to sell?</p>
+              <p className="text-xs text-gray-400">Start selling free for 7 days</p>
+            </div>
+            <ChevronRight size={16} className="text-gray-500 flex-shrink-0" />
+          </button>
+        </div>
+      )}
+
       {/* Grid */}
       <div className="px-4 py-4">
         {loading ? (
@@ -125,7 +150,7 @@ function MarketplacePage() {
               {query ? `No listings match "${query}"` : "No listings here yet"}
             </p>
             <button
-              onClick={() => navigate("/marketplace/new")}
+              onClick={handlePostClick}
               className="text-teal-400 text-sm font-medium"
             >
               Be the first to sell something →
