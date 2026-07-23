@@ -166,6 +166,35 @@ export const deleteListing = async (listingId, _token) => {
   return { success: true }
 }
 
+export const updateListingStatus = async (listingId, status, _token) => {
+  await delay(200)
+  const listings = readListings()
+  const idx = listings.findIndex((l) => l.id === listingId)
+  if (idx === -1) throw new Error("Listing not found")
+  listings[idx] = { ...listings[idx], status }
+  writeListings(listings)
+  return listings[idx]
+}
+
+export const updateListing = async (listingId, formData, _token) => {
+  await delay(400)
+  const listings = readListings()
+  const idx = listings.findIndex((l) => l.id === listingId)
+  if (idx === -1) throw new Error("Listing not found")
+
+  listings[idx] = {
+    ...listings[idx],
+    title: formData.title,
+    price: Number(formData.price) || 0,
+    category: formData.category,
+    description: formData.description,
+    // Keep existing photos unless new previews were provided
+    photos: formData.photoPreviews?.length ? formData.photoPreviews : listings[idx].photos,
+  }
+  writeListings(listings)
+  return listings[idx]
+}
+
 // --- LISTING CHAT ---
 // Reuses the same conversation/message system as DMs (see services/api.js
 // startDM / getConversations / getMessages). We just tag the conversation

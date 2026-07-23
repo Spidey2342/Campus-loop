@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, GraduationCap, BadgeCheck, MessageCircle, Flag } from 'lucide-react'
+import { ArrowLeft, GraduationCap, BadgeCheck, MessageCircle, Flag, Pencil } from 'lucide-react'
 import { getListing, startListingChat } from '../services/marketplaceApi'
 
 function getInitials(name) {
@@ -130,7 +130,9 @@ function ListingDetailPage() {
       </div>
 
       {/* Chat CTA — stays in-app instead of handing off to WhatsApp */}
-      {!isOwnListing && (
+      {/* Chat CTA for buyers — stays in-app instead of handing off to WhatsApp.
+          Owners see an Edit CTA instead. */}
+      {!isOwnListing ? (
         <div
           className="fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-md border-t border-white/10 px-4 py-3"
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
@@ -144,9 +146,19 @@ function ListingDetailPage() {
             {starting ? "Starting chat..." : `Chat with ${listing.seller.username}`}
           </button>
         </div>
+      ) : (
+        <div
+          className="fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-md border-t border-white/10 px-4 py-3"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+        >
+          <button
+            onClick={() => navigate(`/marketplace/${listing.id}/edit`)}
+            className="w-full bg-white/10 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2"
+          >
+            <Pencil size={18} />
+            Edit Listing
+          </button>
+        </div>
       )}
-    </div>
-  )
-}
 
 export default ListingDetailPage

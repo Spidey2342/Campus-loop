@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Plus, X, ShoppingBag, ChevronRight } from 'lucide-react'
+import { Search, Plus, X, ShoppingBag, ChevronRight, List } from 'lucide-react'
 import BottomNav from '../components/layouts/BottomNav'
 import ListingCard from '../components/layouts/ListingCard'
 import { getListings, CATEGORIES, getSellerStatus } from '../services/marketplaceApi'
@@ -64,12 +64,23 @@ function MarketplacePage() {
             <h1 className="text-xl font-bold">Marketplace</h1>
             <p className="text-xs text-gray-400">Buy and sell with your campus</p>
           </div>
-          <button
-            onClick={handlePostClick}
-            className="bg-teal-500 text-black rounded-full p-2.5 flex-shrink-0"
-          >
-            <Plus size={18} />
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {sellerStatus.isSeller && (
+              <button
+                onClick={() => navigate("/marketplace/mine")}
+                className="bg-white/10 text-white rounded-full p-2.5"
+                aria-label="My Listings"
+              >
+                <List size={18} />
+              </button>
+            )}
+            <button
+              onClick={handlePostClick}
+              className="bg-teal-500 text-black rounded-full p-2.5"
+            >
+              <Plus size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Search */}

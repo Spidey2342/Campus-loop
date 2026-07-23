@@ -25,6 +25,8 @@ import HashtagPage from './pages/HashtagPage'
 import MarketplacePage from './pages/MarketplacePage'
 import BecomeSellerPage from './pages/BecomeSellerPage'
 import ListingDetailPage from './pages/ListingDetailPage'
+import MyListingsPage from './pages/MyListingsPage'
+import EditListingPage from './pages/EditListingPage'
 import CreateListingPage from './pages/CreateListingPage'
 
 
@@ -81,6 +83,12 @@ function App() {
 
 <Route path="/notifications" element={
   <ProtectedRoute><NotificationsPage /></ProtectedRoute>
+} />
+<Route path="/marketplace/mine" element={
+  <ProtectedRoute><MyListingsPage /></ProtectedRoute>
+} />
+<Route path="/marketplace/:listingId/edit" element={
+  <ProtectedRoute><EditListingPage /></ProtectedRoute>
 } />
 
 <Route path="/admin" element={
