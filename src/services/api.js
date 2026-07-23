@@ -129,9 +129,9 @@ export const uploadReel = async (formData, token) => {
   return response.json();
 };
 
-export const getFeed = async (token, type = "foryou", skip = 0) => {
+export const getFeed = async (token, type = "foryou", skip = 0, loop = 0) => {
   const response = await authFetch(
-    `${BASE_URL}/reels/feed?type=${type}&skip=${skip}&limit=10`,
+    `${BASE_URL}/reels/feed?type=${type}&skip=${skip}&limit=10&loop=${loop}`,
     { headers: { Authorization: `Bearer ${token}` } }
   )
   if (!response.ok) throw new Error("Failed to load feed")

@@ -33,10 +33,12 @@ function VideoFeed({ feedType }) {
         setSkip(safeData.length)
         setLoopCount(0)
       } else if (safeData.length === 0) {
-        // Feed exhausted — loop back from 0 with same skip so backend reshuffles
-        // Don't reset the visible reels — just fetch the next loop silently
-        setLoopCount(prev => prev + 1)
-        const loopData = await getFeed(token, feedType, 0)
+        // Feed exhausted — loop back with an incremented loop counter so the
+        // backend actually reshuffles (skip alone resetting to 0 doesn't
+        // change anything — same seed, same order, verbatim repeat).
+        const nextLoop = loopCount + 1
+        setLoopCount(nextLoop)
+        const loopData = await getFeed(token, feedType, 0, nextLoop)
         const loopSafe = Array.isArray(loopData) ? loopData : []
         setReels(prev => [...prev, ...loopSafe])
         setSkip(loopSafe.length)
