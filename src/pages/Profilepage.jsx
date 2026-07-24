@@ -5,6 +5,7 @@ import Highlights from '../components/layouts/Highlights'
 import VideoGrid from '../components/layouts/VideoGrid'
 import UserInfo from '../components/layouts/UserInfo'
 import EditProfileModal from '../components/layouts/EditProfileModal'
+import SellerAccountCard from '../components/layouts/SellerAccountCard'
 import { ProfileHeaderSkeleton, ProfileGridSkeleton } from '../components/layouts/Skeleton'
 import { getProfile, getUserReels } from '../services/api'
 
@@ -104,6 +105,11 @@ function Profilepage() {
           profile={profile}
           onEditClick={() => setShowEditModal(true)}
         />
+        {profile.is_own_profile && (
+          <div className="px-4">
+            <SellerAccountCard currentUser={currentUser} />
+          </div>
+        )}
         <Highlights />
         <VideoGrid
           reels={reels}
