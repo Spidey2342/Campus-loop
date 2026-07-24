@@ -315,7 +315,7 @@ const TRIAL_DAYS = 7
 // Stand-in for "people I've personally added as free sellers." Add usernames
 // here to simulate admin-granted seller status until the real admin flow
 // exists on the backend.
-const ADMIN_GRANTED_USERNAMES = []
+const ADMIN_GRANTED_USERNAMES = ["Tripled"]
 
 const readSellerRecord = (username) => {
   try {
