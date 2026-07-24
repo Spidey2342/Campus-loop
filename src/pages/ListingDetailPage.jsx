@@ -129,7 +129,6 @@ function ListingDetailPage() {
         </div>
       </div>
 
-      {/* Chat CTA — stays in-app instead of handing off to WhatsApp */}
       {/* Chat CTA for buyers — stays in-app instead of handing off to WhatsApp.
           Owners see an Edit CTA instead. */}
       {!isOwnListing ? (
@@ -160,5 +159,8 @@ function ListingDetailPage() {
           </button>
         </div>
       )}
+    </div>
+  )
+}
 
 export default ListingDetailPage
