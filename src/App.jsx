@@ -11,6 +11,7 @@ import Login from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import SignUp from './pages/SignUp'
+import LandingPage from './pages/LandingPage'
 import Feedpage from './pages/Feedpage'
 import UploadPage from './pages/UploadPage'
 import Profilepage from './pages/Profilepage'
@@ -39,9 +40,9 @@ function App() {
     <NotificationToast />
     <Routes>
 
-      {/* Public routes — logged in users get redirected to feed */}
+      {/* Root — landing page for new users, feed for logged in */}
       <Route path="/" element={
-        <PublicRoute><Login /></PublicRoute>
+        <PublicRoute><LandingPage /></PublicRoute>
       } />
       <Route path="/login" element={
         <PublicRoute><Login /></PublicRoute>
