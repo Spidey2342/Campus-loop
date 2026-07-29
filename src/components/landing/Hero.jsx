@@ -2,7 +2,7 @@ import {
   Rocket, PlayCircle, GraduationCap, ShoppingBag, MapPin,
   Heart, MessageCircle, Share2, Home, Search, PlusSquare, User,
 } from 'lucide-react'
-import { APP_URL } from './Header.jsx'
+
 
 const stats = [
   { value: '84+', label: 'students already on CampusVibe' },
@@ -33,7 +33,7 @@ export default function Hero() {
 
           <div className="flex items-center gap-4 mt-8 flex-wrap">
             <a
-              href={APP_URL}
+              href="https://campus-loop-peach.vercel.app/signup"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-[15px] rounded-xl font-bold text-[15.5px] bg-gradient-to-br from-teal-500 to-teal-600 text-[#001a17] shadow-[0_12px_34px_-10px_rgba(20,184,166,0.8)] hover:-translate-y-0.5 transition-transform"
