@@ -1,5 +1,5 @@
 import { Play } from 'lucide-react'
-import { APP_URL } from './Header.jsx'
+
 
 export default function Footer() {
   return (
@@ -16,7 +16,7 @@ export default function Footer() {
             <a href="#feed" className="hover:text-white transition-colors">The Feed</a>
             <a href="#marketplace" className="hover:text-white transition-colors">Marketplace</a>
             <a href="#founding" className="hover:text-white transition-colors">Founding Members</a>
-            <a href={APP_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Open app</a>
+            <a href="https://campus-loop-peach.vercel.app/signup" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Open app</a>
           </div>
         </div>
         <p className="text-[12.5px] text-gray-500 mt-6">
