@@ -8,8 +8,7 @@ import Footer from '../components/landing/Footer'
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen bg-black text-white">
-      <div className="fixed inset-0 z-0 pointer-events-none bg-ambient" />
+    <div className="relative min-h-screen text-white overflow-x-hidden bg-ambient">
       <Header />
       <main>
         <Hero />

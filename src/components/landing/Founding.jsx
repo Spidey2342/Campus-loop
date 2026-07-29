@@ -1,8 +1,8 @@
 import { Crown } from 'lucide-react'
-  
+import { APP_URL } from './Header.jsx'
 
 const TOTAL_SPOTS = 100
-const JOINED = 84
+const JOINED = 101
 
 export default function Founding() {
   const spotsLeft = TOTAL_SPOTS - JOINED
@@ -42,7 +42,7 @@ export default function Founding() {
             <div className="text-[44px] font-extrabold text-yellow-400">{spotsLeft}</div>
             <div className="text-[13px] text-gray-400 mt-1">founding spots left</div>
             <a
-              href="https://campus-loop-peach.vercel.app/signup"
+              href={APP_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-5 w-full inline-flex justify-center items-center gap-2 px-6 py-[15px] rounded-xl font-bold text-[15.5px] bg-gradient-to-br from-yellow-400 to-yellow-500 text-[#1c1400] shadow-[0_12px_34px_-10px_rgba(250,204,21,0.7)] hover:-translate-y-0.5 transition-transform"
