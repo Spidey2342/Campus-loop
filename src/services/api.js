@@ -1,5 +1,5 @@
 // The base URL of your Python backend
-const BASE_URL ="https://campus-backend-moz5.onrender.com"
+const BASE_URL ="https://backend.nurora.co.uk"
 
 const authFetch = async (url, options = {}) => {
   const response = await fetch(url, options)

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Video, Lock, CheckCircle, XCircle } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-const BASE_URL = 'https://campus-backend-moz5.onrender.com'
+const BASE_URL = 'https://backend.nurora.co.uk'
 
 function ResetPassword() {
   const navigate = useNavigate()

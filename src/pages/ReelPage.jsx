@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import VideoCard from '../components/video/VideoCard'
 import { ReelSkeleton } from '../components/layouts/Skeleton'
 
-const BASE_URL = 'https://campus-backend-moz5.onrender.com'
+const BASE_URL = 'https://backend.nurora.co.uk'
 
 function ReelPage() {
   const { reelId } = useParams()
