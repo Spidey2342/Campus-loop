@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Send, Plus, MoreVertical, Hand, ShoppingBag, CheckCheck } from 'lucide-react'
 import { getMessages } from '../services/api'
 
-const BASE_URL = "https://backend.nurora.co.uk"
+const BASE_URL = "https://campus-backend-moz5.onrender.com"
+
 
 function ChatPage() {
   const { conversationId } = useParams()
