@@ -1,5 +1,5 @@
 import React from 'react'
-import { GraduationCap, BadgeCheck } from 'lucide-react'
+import { GraduationCap, BadgeCheck, Star } from 'lucide-react'
 
 function getInitials(name) {
   if (!name) return "?"
@@ -38,6 +38,12 @@ function ListingCard({ listing, onClick }) {
             {listing.currency} {listing.price}
           </p>
         </div>
+        {listing.is_featured && (
+          <div className="absolute top-2 right-2 flex items-center gap-0.5 bg-amber-500 px-2 py-0.5 rounded-full">
+            <Star size={9} className="text-black" fill="currentColor" />
+            <p className="text-[10px] font-bold text-black">Featured</p>
+          </div>
+        )}
       </div>
 
       <div className="p-2.5">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw, Plus } from 'lucide-react'
-import { getMyListings, updateListingStatus, deleteListing } from '../services/marketplaceApi'
+import { ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw, Plus, Star } from 'lucide-react'
+import { getMyListings, updateListingStatus, deleteListing, getFeaturePricing, initializeFeaturePayment } from '../services/marketplaceApi'
 
 function StatusBadge({ status }) {
   const styles = {
@@ -23,6 +23,14 @@ function MyListingsPage() {
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+
+  // Feature-listing modal state
+  const [featureListing, setFeatureListing] = useState(null) // the listing object, or null when closed
+  const [pricingOptions, setPricingOptions] = useState([])
+  const [pricingLoading, setPricingLoading] = useState(false)
+  const [selectedDuration, setSelectedDuration] = useState(null)
+  const [featureSubmitting, setFeatureSubmitting] = useState(false)
+  const [featureError, setFeatureError] = useState("")
 
   const load = async () => {
     try {
@@ -60,6 +68,37 @@ function MyListingsPage() {
       console.error(err)
     } finally {
       setBusyId(null)
+    }
+  }
+
+  const openFeatureModal = async (listing) => {
+    setFeatureListing(listing)
+    setFeatureError("")
+    setSelectedDuration(null)
+    setPricingLoading(true)
+    try {
+      const data = await getFeaturePricing(token)
+      setPricingOptions(data.options || [])
+      if (data.options?.length) setSelectedDuration(data.options[0].duration_days)
+    } catch (err) {
+      setFeatureError("Couldn't load pricing — try again")
+    } finally {
+      setPricingLoading(false)
+    }
+  }
+
+  const handleStartFeaturePayment = async () => {
+    if (!selectedDuration || !featureListing || featureSubmitting) return
+    setFeatureSubmitting(true)
+    setFeatureError("")
+    try {
+      const result = await initializeFeaturePayment(featureListing.id, selectedDuration, token)
+      // Hand off to Paystack's hosted checkout — it redirects back to
+      // /marketplace/payment/callback when done.
+      window.location.href = result.authorization_url
+    } catch (err) {
+      setFeatureError(err.message || "Couldn't start payment")
+      setFeatureSubmitting(false)
     }
   }
 
@@ -112,13 +151,20 @@ function MyListingsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium truncate">{listing.title}</p>
-                    <StatusBadge status={listing.status} />
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {listing.is_featured && (
+                        <span className="flex items-center gap-0.5 text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded-full">
+                          <Star size={9} fill="currentColor" /> Featured
+                        </span>
+                      )}
+                      <StatusBadge status={listing.status} />
+                    </div>
                   </div>
                   <p className="text-sm text-teal-300 font-semibold mt-0.5">
                     {listing.currency} {listing.price}
                   </p>
 
-                  <div className="flex items-center gap-4 mt-2">
+                  <div className="flex items-center gap-3.5 mt-2 flex-wrap">
                     <button
                       onClick={() => navigate(`/marketplace/${listing.id}/edit`)}
                       className="flex items-center gap-1 text-xs text-gray-300"
@@ -136,6 +182,14 @@ function MyListingsPage() {
                         <><CheckCircle2 size={12} /> Mark sold</>
                       )}
                     </button>
+                    {listing.status === "active" && !listing.is_featured && (
+                      <button
+                        onClick={() => openFeatureModal(listing)}
+                        className="flex items-center gap-1 text-xs text-amber-400 font-medium"
+                      >
+                        <Star size={12} /> Feature
+                      </button>
+                    )}
                     <button
                       onClick={() => setConfirmDeleteId(listing.id)}
                       disabled={busyId === listing.id}
@@ -178,6 +232,69 @@ function MyListingsPage() {
                 className="flex-1 bg-red-500 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-60"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feature listing modal */}
+      {featureListing && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
+          onClick={() => !featureSubmitting && setFeatureListing(null)}
+        >
+          <div
+            className="bg-gray-900 w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-6 border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Star size={16} className="text-amber-400" fill="currentColor" />
+              <h2 className="text-white text-lg font-semibold">Feature This Listing</h2>
+            </div>
+            <p className="text-gray-400 text-sm mb-5">
+              Pin "{featureListing.title}" to the top of the marketplace feed.
+            </p>
+
+            {pricingLoading ? (
+              <div className="flex justify-center py-6">
+                <div className="w-5 h-5 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <div className="space-y-2 mb-5">
+                {pricingOptions.map((opt) => (
+                  <button
+                    key={opt.duration_days}
+                    onClick={() => setSelectedDuration(opt.duration_days)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all ${
+                      selectedDuration === opt.duration_days
+                        ? "border-teal-400 bg-teal-500/10"
+                        : "border-white/10 bg-white/5"
+                    }`}
+                  >
+                    <span className="text-sm text-white">{opt.duration_days} days</span>
+                    <span className="text-sm font-semibold text-teal-300">GHS {opt.amount}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {featureError && <p className="text-red-400 text-xs mb-3">{featureError}</p>}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setFeatureListing(null)}
+                disabled={featureSubmitting}
+                className="flex-1 bg-white/10 py-3 rounded-xl text-white text-sm disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleStartFeaturePayment}
+                disabled={!selectedDuration || featureSubmitting || pricingLoading}
+                className="flex-1 bg-amber-500 py-3 rounded-xl text-black text-sm font-semibold disabled:opacity-50"
+              >
+                {featureSubmitting ? "Redirecting..." : "Pay & Feature"}
               </button>
             </div>
           </div>

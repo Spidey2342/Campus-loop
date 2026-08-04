@@ -143,6 +143,49 @@ export const startListingChat = async (listingId, token) => {
   return response.json()
 }
 
+// --- FEATURED LISTINGS (payment) ---
+
+export const getFeaturePricing = async (token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/feature-pricing`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Failed to load pricing")
+  return response.json() // { currency, options: [{ duration_days, amount }] }
+}
+
+// Returns { authorization_url, reference, amount, duration_days }.
+// Caller should redirect the browser to authorization_url:
+//   window.location.href = data.authorization_url
+export const initializeFeaturePayment = async (listingId, durationDays, token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/listings/${listingId}/feature/initialize`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ duration_days: durationDays }),
+  })
+  if (!response || !response.ok) {
+    const error = await response?.json().catch(() => ({}))
+    throw new Error(error?.detail || "Failed to start payment")
+  }
+  return response.json()
+}
+
+// Called on the payment callback page after Paystack redirects back with
+// ?reference=... in the URL.
+export const verifyFeaturePayment = async (reference, token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/payments/verify/${reference}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) {
+    const error = await response?.json().catch(() => ({}))
+    throw new Error(error?.detail || "Failed to verify payment")
+  }
+  return response.json() // { status: "success" | "failed" | "pending", listing? }
+}
+
 // --- SELLER STATUS ---
 // Real network calls now — components using this need to handle it as
 // async (see the loading-state changes in MarketplacePage, CreateListingPage,

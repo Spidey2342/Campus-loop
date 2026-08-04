@@ -29,6 +29,7 @@ import ListingDetailPage from './pages/ListingDetailPage'
 import MyListingsPage from './pages/MyListingsPage'
 import EditListingPage from './pages/EditListingPage'
 import CreateListingPage from './pages/CreateListingPage'
+import PaymentCallbackPage from './pages/PaymentCallbackPage'
 
 
 function App() {
@@ -108,6 +109,9 @@ function App() {
 } />
 <Route path="/marketplace/become-seller" element={
   <ProtectedRoute><BecomeSellerPage /></ProtectedRoute>
+} />
+<Route path="/marketplace/payment/callback" element={
+  <ProtectedRoute><PaymentCallbackPage /></ProtectedRoute>
 } />
 <Route path="/marketplace/:listingId" element={
   <ProtectedRoute><ListingDetailPage /></ProtectedRoute>
