@@ -8,7 +8,7 @@ import {
   getSchoolDetail, getReelsByHashtag, followUser
 } from "../services/api"
 
-const BASE_URL = "https://backend.nurora.co.uk"
+const BASE_URL = "https://code-dreams-backend.onrender.com"
 
 function DiscoverPage() {
   const navigate = useNavigate()

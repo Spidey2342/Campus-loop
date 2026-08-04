@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Video, Mail, CheckCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const BASE_URL = 'https://backend.nurora.co.uk'
+const BASE_URL = 'https://code-dreams-backend.onrender.com'
 
 function ForgotPassword() {
   const navigate = useNavigate()

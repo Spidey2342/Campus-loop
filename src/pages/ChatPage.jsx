@@ -4,7 +4,7 @@ import { ArrowLeft, Send, Plus, MoreVertical, Hand, ShoppingBag, CheckCheck } fr
 import { getMessages } from '../services/api'
 import { getListingContext, getListingMessages, sendListingMessage } from '../services/marketplaceApi'
 
-const BASE_URL = "https://backend.nurora.co.uk"
+const BASE_URL = "https://code-dreams-backend.onrender.com"
 
 function ChatPage() {
   const { conversationId } = useParams()
