@@ -15,8 +15,10 @@ function EditListingPage() {
   const [price, setPrice] = useState("")
   const [category, setCategory] = useState(SELLABLE_CATEGORIES[0])
   const [description, setDescription] = useState("")
+  // existingPhotos: real Cloudinary URLs (strings) already on the listing
   const [existingPhotos, setExistingPhotos] = useState([])
-  const [newPhotoPreviews, setNewPhotoPreviews] = useState([])
+  // newPhotos: real File objects picked just now, with a preview URL each
+  const [newPhotos, setNewPhotos] = useState([]) // [{ file, preview }]
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
 
@@ -38,15 +40,12 @@ function EditListingPage() {
     load()
   }, [listingId])
 
-  const totalPhotoCount = existingPhotos.length + newPhotoPreviews.length
+  const totalPhotoCount = existingPhotos.length + newPhotos.length
 
   const handlePhotoSelect = (e) => {
     const files = Array.from(e.target.files || []).slice(0, 4 - totalPhotoCount)
-    files.forEach((file) => {
-      const reader = new FileReader()
-      reader.onload = () => setNewPhotoPreviews((prev) => [...prev, reader.result])
-      reader.readAsDataURL(file)
-    })
+    const added = files.map((file) => ({ file, preview: URL.createObjectURL(file) }))
+    setNewPhotos((prev) => [...prev, ...added])
   }
 
   const removeExistingPhoto = (index) => {
@@ -54,7 +53,10 @@ function EditListingPage() {
   }
 
   const removeNewPhoto = (index) => {
-    setNewPhotoPreviews((prev) => prev.filter((_, i) => i !== index))
+    setNewPhotos((prev) => {
+      URL.revokeObjectURL(prev[index]?.preview)
+      return prev.filter((_, i) => i !== index)
+    })
   }
 
   const isValid = title.trim() && price && Number(price) > 0 && description.trim()
@@ -64,9 +66,6 @@ function EditListingPage() {
     setSubmitting(true)
     setError("")
     try {
-      // Merge kept existing photos + any newly added ones. If everything
-      // was removed and nothing new added, falls back to existing (empty).
-      const mergedPhotos = [...existingPhotos, ...newPhotoPreviews]
       await updateListing(
         listingId,
         {
@@ -74,7 +73,8 @@ function EditListingPage() {
           price,
           category,
           description: description.trim(),
-          photoPreviews: mergedPhotos,
+          keepPhotoUrls: existingPhotos,
+          newPhotoFiles: newPhotos.map((p) => p.file),
         },
         token
       )
@@ -121,9 +121,9 @@ function EditListingPage() {
                 </button>
               </div>
             ))}
-            {newPhotoPreviews.map((src, i) => (
+            {newPhotos.map((p, i) => (
               <div key={`new-${i}`} className="relative w-20 h-20 flex-shrink-0">
-                <img src={src} className="w-full h-full object-cover rounded-xl" />
+                <img src={p.preview} className="w-full h-full object-cover rounded-xl" />
                 <button
                   onClick={() => removeNewPhoto(i)}
                   className="absolute -top-1.5 -right-1.5 bg-black rounded-full p-0.5 border border-white/20"

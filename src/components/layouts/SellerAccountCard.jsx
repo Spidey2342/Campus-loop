@@ -1,11 +1,20 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShoppingBag, Clock, Crown, List, ChevronRight } from 'lucide-react'
 import { getSellerStatus } from '../../services/marketplaceApi'
 
-function SellerAccountCard({ currentUser }) {
+function SellerAccountCard() {
   const navigate = useNavigate()
-  const status = getSellerStatus(currentUser)
+  const token = localStorage.getItem("token")
+  const [status, setStatus] = useState(null)
+
+  useEffect(() => {
+    let active = true
+    getSellerStatus(token).then((s) => { if (active) setStatus(s) })
+    return () => { active = false }
+  }, [])
+
+  if (!status) return null // keep loading unobtrusive — this is a secondary card, not the main content
 
   if (!status.isSeller) {
     return (

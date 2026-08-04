@@ -1,370 +1,178 @@
 // ============================================================================
-// MARKETPLACE API — MOCK LAYER
+// MARKETPLACE API — connects to the real backend
 // ----------------------------------------------------------------------------
-// The real backend (Python/FastAPI on Render) doesn't have marketplace or
-// listing-chat endpoints yet. This file fakes them with localStorage so the
-// frontend can be built and demoed now.
-//
-// HOW TO SWAP TO THE REAL BACKEND LATER:
-// Every exported function here matches the same shape/signature it would
-// have as a real API call (same params, same return shape, async). When the
-// backend is ready, replace each function body with a `fetch` to BASE_URL —
-// same pattern as services/api.js — and nothing calling these functions
-// needs to change.
-//
-// Suggested real endpoints (for whoever builds the backend):
-//   GET    /marketplace/listings?category=&school=&q=&skip=
-//   GET    /marketplace/listings/:id
-//   POST   /marketplace/listings              (FormData: title, price, category, description, photos[])
-//   PATCH  /marketplace/listings/:id
-//   DELETE /marketplace/listings/:id
-//   GET    /marketplace/listings/mine
-//   POST   /marketplace/listings/:id/chat      -> reuses the messages/conversations model,
-//                                                  but tags the conversation with listing_id
-//                                                  so ChatPage can show the pinned listing card.
+// Mirrors the pattern in services/api.js. All the mock/localStorage logic
+// that used to live here has been removed now that the backend actually
+// implements these endpoints (see app/routers/marketplace.py).
 // ============================================================================
 
-const STORAGE_KEY = "campusloop_mock_listings"
-const CHAT_LINK_KEY = "campusloop_mock_listing_chats" // conversationId -> listing snapshot
+const BASE_URL = "https://backend.nurora.co.uk"
 
 export const CATEGORIES = [
   "All", "Fashion", "Food", "Tech", "Beauty", "Tutoring", "Events", "Other",
 ]
 
-const seedListings = () => ([
-  {
-    id: "seed-1",
-    title: "Custom Ankara Corset Tops",
-    price: 85,
-    currency: "GHS",
-    category: "Fashion",
-    description: "Made-to-order corset tops, any size. Turnaround 3-5 days. DM your measurements.",
-    photos: [],
-    school_name: "HTU",
-    seller: { id: "seller-1", username: "adwoa_stitches", full_name: "Adwoa Mensah", avatar_url: null, is_verified: true },
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-    status: "active",
-  },
-  {
-    id: "seed-2",
-    title: "Late-Night Waakye Delivery",
-    price: 15,
-    currency: "GHS",
-    category: "Food",
-    description: "Hostel delivery only, 9pm-1am. Extra egg +2, extra meat +5.",
-    photos: [],
-    school_name: "HTU",
-    seller: { id: "seller-2", username: "waakye_plug", full_name: "Kojo Boateng", avatar_url: null, is_verified: false },
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
-    status: "active",
-  },
-  {
-    id: "seed-3",
-    title: "iPhone Screen Repair (Same Day)",
-    price: 250,
-    currency: "GHS",
-    category: "Tech",
-    description: "iPhone 8 through 13. Original quality parts. Come to my hostel or I come to you (+20).",
-    photos: [],
-    school_name: "KNUST",
-    seller: { id: "seller-3", username: "fix_am_gh", full_name: "Yaw Owusu", avatar_url: null, is_verified: true },
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    status: "active",
-  },
-])
-
-const readListings = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) {
-      const seeded = seedListings()
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded))
-      return seeded
-    }
-    return JSON.parse(raw)
-  } catch {
-    return []
+const authFetch = async (url, options = {}) => {
+  const response = await fetch(url, options)
+  if (response.status === 401) {
+    localStorage.clear()
+    window.location.href = "/login"
+    return
   }
+  if (response.status === 429) {
+    throw new Error("You're doing that too fast. Please slow down.")
+  }
+  return response
 }
-
-const writeListings = (listings) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(listings))
-}
-
-const delay = (ms = 350) => new Promise((res) => setTimeout(res, ms))
 
 // --- LISTINGS ---
 
 export const getListings = async (token, { category = "All", school, query, skip = 0, limit = 20 } = {}) => {
-  await delay()
-  let listings = readListings().filter((l) => l.status === "active")
+  const params = new URLSearchParams()
+  if (category && category !== "All") params.set("category", category)
+  if (school) params.set("school", school)
+  if (query?.trim()) params.set("q", query.trim())
+  params.set("skip", skip)
+  params.set("limit", limit)
 
-  if (category && category !== "All") {
-    listings = listings.filter((l) => l.category === category)
-  }
-  if (school) {
-    listings = listings.filter((l) => l.school_name === school)
-  }
-  if (query?.trim()) {
-    const q = query.trim().toLowerCase()
-    listings = listings.filter(
-      (l) => l.title.toLowerCase().includes(q) || l.description.toLowerCase().includes(q)
-    )
-  }
-
-  listings = listings.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-  return listings.slice(skip, skip + limit)
+  const response = await authFetch(`${BASE_URL}/marketplace/listings?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Failed to load listings")
+  return response.json()
 }
 
-export const getListing = async (listingId, _token) => {
-  await delay(200)
-  const listing = readListings().find((l) => l.id === listingId)
-  if (!listing) throw new Error("Listing not found")
-  return listing
+export const getListing = async (listingId, token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/listings/${listingId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Listing not found")
+  return response.json()
 }
 
-export const getMyListings = async (_token) => {
-  await delay(200)
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
-  return readListings().filter((l) => l.seller.id === currentUser.id || l.seller.username === currentUser.username)
+export const getMyListings = async (token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/listings/mine`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Failed to load your listings")
+  return response.json()
 }
 
-export const createListing = async (formData, _token) => {
-  await delay(500)
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
+// photoFiles: array of real File objects (not base64 previews)
+export const createListing = async ({ title, price, category, description, photoFiles = [] }, token) => {
+  const formData = new FormData()
+  formData.append("title", title)
+  formData.append("description", description)
+  formData.append("price", price)
+  formData.append("category", category)
+  photoFiles.forEach((file) => formData.append("photos", file))
 
-  const newListing = {
-    id: `local-${Date.now()}`,
-    title: formData.title,
-    price: Number(formData.price) || 0,
-    currency: "GHS",
-    category: formData.category,
-    description: formData.description,
-    photos: formData.photoPreviews || [],
-    school_name: currentUser.school_name || "Your School",
-    seller: {
-      id: currentUser.id || "me",
-      username: currentUser.username || "you",
-      full_name: currentUser.full_name || "You",
-      avatar_url: currentUser.avatar_url || null,
-      is_verified: !!currentUser.is_verified,
+  const response = await fetch(`${BASE_URL}/marketplace/listings`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    // No Content-Type header — the browser sets the multipart boundary itself
+    body: formData,
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.detail || "Failed to create listing")
+  }
+  return response.json()
+}
+
+export const deleteListing = async (listingId, token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/listings/${listingId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Failed to delete listing")
+  return response.json()
+}
+
+export const updateListingStatus = async (listingId, status, token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/listings/${listingId}/status`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
-    created_at: new Date().toISOString(),
-    status: "active",
+    body: JSON.stringify({ status }),
+  })
+  if (!response || !response.ok) throw new Error("Failed to update listing")
+  return response.json()
+}
+
+// keepPhotoUrls: existing Cloudinary URLs the seller kept (strings)
+// newPhotoFiles: newly added real File objects
+export const updateListing = async (listingId, { title, price, category, description, keepPhotoUrls = [], newPhotoFiles = [] }, token) => {
+  const formData = new FormData()
+  formData.append("title", title)
+  formData.append("description", description)
+  formData.append("price", price)
+  formData.append("category", category)
+  keepPhotoUrls.forEach((url) => formData.append("keep_photo_urls", url))
+  newPhotoFiles.forEach((file) => formData.append("new_photos", file))
+
+  const response = await fetch(`${BASE_URL}/marketplace/listings/${listingId}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.detail || "Failed to save changes")
   }
-
-  const listings = readListings()
-  listings.unshift(newListing)
-  writeListings(listings)
-  return newListing
-}
-
-export const deleteListing = async (listingId, _token) => {
-  await delay(200)
-  const listings = readListings().filter((l) => l.id !== listingId)
-  writeListings(listings)
-  return { success: true }
-}
-
-export const updateListingStatus = async (listingId, status, _token) => {
-  await delay(200)
-  const listings = readListings()
-  const idx = listings.findIndex((l) => l.id === listingId)
-  if (idx === -1) throw new Error("Listing not found")
-  listings[idx] = { ...listings[idx], status }
-  writeListings(listings)
-  return listings[idx]
-}
-
-export const updateListing = async (listingId, formData, _token) => {
-  await delay(400)
-  const listings = readListings()
-  const idx = listings.findIndex((l) => l.id === listingId)
-  if (idx === -1) throw new Error("Listing not found")
-
-  listings[idx] = {
-    ...listings[idx],
-    title: formData.title,
-    price: Number(formData.price) || 0,
-    category: formData.category,
-    description: formData.description,
-    // Keep existing photos unless new previews were provided
-    photos: formData.photoPreviews?.length ? formData.photoPreviews : listings[idx].photos,
-  }
-  writeListings(listings)
-  return listings[idx]
+  return response.json()
 }
 
 // --- LISTING CHAT ---
-// Reuses the same conversation/message system as DMs (see services/api.js
-// startDM / getConversations / getMessages). We just tag the conversation
-// with the listing it came from so ChatPage can render a pinned listing card.
+// Reuses the real conversations/messages system (see services/api.js
+// getMessages / send). This just creates (or reuses) a conversation tagged
+// with the listing — the returned conversation already includes a
+// `.listing` snapshot for the pinned card in ChatPage.
 
 export const startListingChat = async (listingId, token) => {
-  await delay(300)
-  const listing = await getListing(listingId, token)
-
-  // Fake conversation id derived from listing + a marker so ChatPage can
-  // detect it's a marketplace thread without extra backend support.
-  const conversationId = `listing-${listing.id}`
-
-  const links = JSON.parse(localStorage.getItem(CHAT_LINK_KEY) || "{}")
-  links[conversationId] = {
-    listing_id: listing.id,
-    title: listing.title,
-    price: listing.price,
-    currency: listing.currency,
-    thumbnail: listing.photos?.[0] || null,
-    seller_username: listing.seller.username,
+  const response = await authFetch(`${BASE_URL}/marketplace/listings/${listingId}/chat`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) {
+    const error = await response?.json().catch(() => ({}))
+    throw new Error(error?.detail || "Failed to start chat")
   }
-  localStorage.setItem(CHAT_LINK_KEY, JSON.stringify(links))
-
-  return {
-    id: conversationId,
-    name: listing.seller.full_name,
-    username: listing.seller.username,
-    avatar_url: listing.seller.avatar_url,
-    type: "listing",
-  }
+  return response.json()
 }
 
-// Called from ChatPage to check if a conversation has a listing pinned to it.
-export const getListingContext = (conversationId) => {
-  try {
-    const links = JSON.parse(localStorage.getItem(CHAT_LINK_KEY) || "{}")
-    return links[conversationId] || null
-  } catch {
-    return null
+// --- SELLER STATUS ---
+// Real network calls now — components using this need to handle it as
+// async (see the loading-state changes in MarketplacePage, CreateListingPage,
+// BecomeSellerPage, SellerAccountCard).
+
+const mapSellerStatus = (data) => ({
+  isSeller: data.is_seller,
+  source: data.source,
+  trialEndsAt: data.trial_ends_at,
+  daysLeft: data.days_left,
+})
+
+export const getSellerStatus = async (token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/seller-status`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) {
+    return { isSeller: false, source: null, trialEndsAt: null, daysLeft: 0 }
   }
+  return mapSellerStatus(await response.json())
 }
 
-// --- MOCK MESSAGES FOR LISTING CHATS ---
-// Real DMs use services/api.js (getMessages/send, backed by the Python API).
-// Listing chats don't exist on that backend yet, so we fake the same message
-// shape here. Once the backend supports "conversations tagged with a
-// listing_id", delete this block and route listing chats through the normal
-// getMessages/send functions in api.js instead — ChatPage.jsx is already
-// written to make that swap a one-line change (see isMockThread there).
-
-const MOCK_MESSAGES_KEY = "campusloop_mock_listing_messages" // conversationId -> message[]
-
-const readMockMessages = (conversationId) => {
-  try {
-    const all = JSON.parse(localStorage.getItem(MOCK_MESSAGES_KEY) || "{}")
-    return all[conversationId] || []
-  } catch {
-    return []
+export const startSellerTrial = async (token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/become-seller`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) {
+    const error = await response?.json().catch(() => ({}))
+    throw new Error(error?.detail || "Failed to start seller trial")
   }
-}
-
-const writeMockMessages = (conversationId, messages) => {
-  const all = JSON.parse(localStorage.getItem(MOCK_MESSAGES_KEY) || "{}")
-  all[conversationId] = messages
-  localStorage.setItem(MOCK_MESSAGES_KEY, JSON.stringify(all))
-}
-
-export const getListingMessages = async (conversationId) => {
-  await delay(150)
-  return readMockMessages(conversationId)
-}
-
-export const sendListingMessage = async (conversationId, text) => {
-  await delay(150)
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
-  const messages = readMockMessages(conversationId)
-  const message = {
-    id: `mock-${Date.now()}`,
-    text,
-    message_type: "text",
-    sender_id: currentUser.id || "me",
-    sender_username: currentUser.username || "you",
-    sender_avatar: currentUser.avatar_url || null,
-    is_mine: true,
-    created_at: new Date().toISOString(),
-  }
-  messages.push(message)
-  writeMockMessages(conversationId, messages)
-  return message
-}
-
-// --- SELLER STATUS / GATING ---
-// Not everyone can post listings. There are three ways to become a seller:
-//   1. "trial"      — self-serve, anyone can start it, free for 7 days, then
-//                      needs payment (payment integration isn't built yet —
-//                      that's the next piece once this is wired to real auth).
-//   2. "admin_free"  — you personally add someone as a seller (e.g. the
-//                      ambassadors/sellers you're hand-picking). Free forever,
-//                      no trial clock. Real version: an admin-only endpoint
-//                      gated by is_admin, same pattern as your existing
-//                      AdminPage. For now the mock ADMIN_GRANTED_USERNAMES
-//                      list below stands in for "people I added by hand."
-//   3. none          — can browse the marketplace and chat as a buyer, but
-//                      the "+" (post a listing) flow redirects to the
-//                      become-a-seller screen instead of the listing form.
-//
-// Suggested real backend fields (on the User model):
-//   is_seller            BOOLEAN
-//   seller_source         ENUM('trial', 'admin_free', 'paid')
-//   seller_trial_ends_at  TIMESTAMP, nullable
-// A create-listing endpoint would check is_seller + (seller_source != 'trial'
-// OR seller_trial_ends_at > now()) before accepting a new listing.
-
-const SELLER_KEY = "campusloop_mock_sellers" // username -> seller record
-const TRIAL_DAYS = 7
-
-// Stand-in for "people I've personally added as free sellers." Add usernames
-// here to simulate admin-granted seller status until the real admin flow
-// exists on the backend.
-const ADMIN_GRANTED_USERNAMES = ["Tripled"]
-
-const readSellerRecord = (username) => {
-  try {
-    const all = JSON.parse(localStorage.getItem(SELLER_KEY) || "{}")
-    return all[username] || null
-  } catch {
-    return null
-  }
-}
-
-const writeSellerRecord = (username, record) => {
-  const all = JSON.parse(localStorage.getItem(SELLER_KEY) || "{}")
-  all[username] = record
-  localStorage.setItem(SELLER_KEY, JSON.stringify(all))
-}
-
-// Returns { isSeller, source, trialEndsAt, daysLeft }
-export const getSellerStatus = (currentUser) => {
-  const username = currentUser?.username
-  if (!username) return { isSeller: false, source: null, trialEndsAt: null, daysLeft: 0 }
-
-  if (ADMIN_GRANTED_USERNAMES.includes(username)) {
-    return { isSeller: true, source: "admin_free", trialEndsAt: null, daysLeft: null }
-  }
-
-  const record = readSellerRecord(username)
-  if (!record) return { isSeller: false, source: null, trialEndsAt: null, daysLeft: 0 }
-
-  if (record.source === "admin_free" || record.source === "paid") {
-    return { isSeller: true, source: record.source, trialEndsAt: null, daysLeft: null }
-  }
-
-  // Trial — check expiry
-  const trialEndsAt = new Date(record.trialEndsAt)
-  const msLeft = trialEndsAt - new Date()
-  const daysLeft = Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24)))
-
-  return {
-    isSeller: msLeft > 0,
-    source: "trial",
-    trialEndsAt: record.trialEndsAt,
-    daysLeft,
-    expired: msLeft <= 0,
-  }
-}
-
-export const startSellerTrial = async (currentUser) => {
-  await delay(300)
-  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000).toISOString()
-  writeSellerRecord(currentUser.username, { source: "trial", trialEndsAt })
-  return getSellerStatus(currentUser)
+  return mapSellerStatus(await response.json())
 }

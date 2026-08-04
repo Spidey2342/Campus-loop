@@ -5,14 +5,14 @@ import { startSellerTrial } from '../services/marketplaceApi'
 
 function BecomeSellerPage() {
   const navigate = useNavigate()
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}")
+  const token = localStorage.getItem("token")
   const [starting, setStarting] = useState(false)
 
   const handleStart = async () => {
     if (starting) return
     setStarting(true)
     try {
-      await startSellerTrial(currentUser)
+      await startSellerTrial(token)
       navigate("/marketplace/new")
     } catch (err) {
       console.error(err)

@@ -27,8 +27,13 @@ function MarketplacePage() {
   const [query, setQuery] = useState("")
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [sellerStatus, setSellerStatus] = useState({ isSeller: false })
 
-  const sellerStatus = getSellerStatus(currentUser)
+  useEffect(() => {
+    let active = true
+    getSellerStatus(token).then((status) => { if (active) setSellerStatus(status) })
+    return () => { active = false }
+  }, [])
 
   const handlePostClick = () => {
     navigate(sellerStatus.isSeller ? "/marketplace/new" : "/marketplace/become-seller")

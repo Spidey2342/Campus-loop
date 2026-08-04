@@ -2,20 +2,12 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Send, Plus, MoreVertical, Hand, ShoppingBag, CheckCheck } from 'lucide-react'
 import { getMessages } from '../services/api'
-import { getListingContext, getListingMessages, sendListingMessage } from '../services/marketplaceApi'
 
-const BASE_URL = "https://campus-backend-moz5.onrender.com"
+const BASE_URL = "https://backend.nurora.co.uk"
 
 function ChatPage() {
   const { conversationId } = useParams()
   const navigate = useNavigate()
-
-  // Listing chats are mocked locally until the backend supports them —
-  // see the comment block above getListingMessages in marketplaceApi.js.
-  // Swapping to a real backend-tagged conversation later just means
-  // deleting this flag and the branches that check it below.
-  const isMockThread = conversationId?.startsWith("listing-")
-  const listingContext = isMockThread ? getListingContext(conversationId) : null
 
   // ✅ All state at the top — nothing inside other functions
   const [messages, setMessages] = useState([])
@@ -34,9 +26,7 @@ function ChatPage() {
   // ✅ loadMessages is a clean standalone function
   const loadMessages = async (initial = false) => {
     try {
-      const data = isMockThread
-        ? await getListingMessages(conversationId)
-        : await getMessages(conversationId, token)
+      const data = await getMessages(conversationId, token)
       const safeData = Array.isArray(data) ? data : []
 
       if (initial) {
@@ -58,32 +48,22 @@ function ChatPage() {
     }
   }
 
-  // ✅ Load conversation info + messages on mount
+  // ✅ Load conversation info (including any pinned marketplace listing —
+  // the backend already tags conversation.listing when this thread started
+  // from a listing) + messages on mount
   useEffect(() => {
     const load = async () => {
       try {
-        if (isMockThread) {
-          // Seller name/avatar comes from the listing snapshot, not the
-          // real conversations endpoint (this thread doesn't exist there).
-          setConvInfo({
-            name: listingContext?.seller_username ? `@${listingContext.seller_username}` : "Seller",
-            avatar_url: null,
-            username: listingContext?.seller_username,
-          })
-        } else {
-          // Get conversation info to show name in header
-          const convResponse = await fetch(
-            `${BASE_URL}/messages/conversations`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          )
-          const convData = await convResponse.json()
-          const thisConv = Array.isArray(convData)
-            ? convData.find(c => c.id === conversationId)
-            : null
-          setConvInfo(thisConv)
-        }
+        const convResponse = await fetch(
+          `${BASE_URL}/messages/conversations`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+        const convData = await convResponse.json()
+        const thisConv = Array.isArray(convData)
+          ? convData.find(c => c.id === conversationId)
+          : null
+        setConvInfo(thisConv)
 
-        // Load messages
         await loadMessages(true)
       } catch (err) {
         console.error(err)
@@ -93,10 +73,8 @@ function ChatPage() {
     load()
   }, [conversationId])
 
-  // ✅ Poll every 3 seconds for new messages (skip polling for mock threads —
-  // nothing external can write to them, so there's nothing new to catch)
+  // ✅ Poll every 3 seconds for new messages
   useEffect(() => {
-    if (isMockThread) return
     const interval = setInterval(() => {
       loadMessages(false)
     }, 3000)
@@ -129,24 +107,19 @@ function ChatPage() {
     setMessages(prev => [...prev, optimistic])
 
     try {
-      if (isMockThread) {
-        await sendListingMessage(conversationId, messageText)
-        await loadMessages(false)
-      } else {
-        const response = await fetch(
-          `${BASE_URL}/messages/conversations/${conversationId}/send`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ text: messageText }),
-          }
-        )
-        if (response.ok) {
-          await loadMessages(false)
+      const response = await fetch(
+        `${BASE_URL}/messages/conversations/${conversationId}/send`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ text: messageText }),
         }
+      )
+      if (response.ok) {
+        await loadMessages(false)
       }
     } catch (err) {
       console.error(err)
@@ -174,6 +147,8 @@ function ChatPage() {
     groups[date].push(msg)
     return groups
   }, {})
+
+  const listingContext = convInfo?.listing || null
 
   return (
     <div className="h-screen bg-black text-white flex flex-col">
