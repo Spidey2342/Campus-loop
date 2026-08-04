@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Search, Users } from 'lucide-react'
 import { startDM, createGroup } from '../services/api'
 
-const BASE_URL = "https://code-dreams-backend.onrender.com"
+const BASE_URL = "https://campus-backend-moz5.onrender.com"
 
 function NewMessagePage() {
   const navigate = useNavigate()

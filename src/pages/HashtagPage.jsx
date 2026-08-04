@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Play } from 'lucide-react'
 import VideoCard from '../components/video/VideoCard'
 
-const BASE_URL = 'https://code-dreams-backend.onrender.com'
+const BASE_URL = 'https://campus-backend-moz5.onrender.com'
 
 function HashtagPage() {
   const { tag } = useParams()

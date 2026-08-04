@@ -4,7 +4,7 @@ import { ArrowLeft, Send, Plus, MoreVertical, Hand, ShoppingBag, CheckCheck } fr
 import { getMessages } from '../services/api'
 import { getListingContext, getListingMessages, sendListingMessage } from '../services/marketplaceApi'
 
-const BASE_URL = "https://code-dreams-backend.onrender.com"
+const BASE_URL = "https://campus-backend-moz5.onrender.com"
 
 function ChatPage() {
   const { conversationId } = useParams()

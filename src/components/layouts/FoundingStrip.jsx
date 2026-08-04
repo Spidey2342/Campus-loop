@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Crown } from 'lucide-react'
 
-const BASE_URL = 'https://code-dreams-backend.onrender.com'
+const BASE_URL = 'https://campus-backend-moz5.onrender.com'
 
 function FoundingStrip() {
   const [members, setMembers] = useState([])
