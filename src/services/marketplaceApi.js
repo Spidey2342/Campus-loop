@@ -219,3 +219,42 @@ export const startSellerTrial = async (token) => {
   }
   return mapSellerStatus(await response.json())
 }
+
+// --- WHATSAPP CONTACT ---
+
+export const getMyWhatsapp = async (token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/whatsapp`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) return { whatsapp_number: null }
+  return response.json()
+}
+
+export const setMyWhatsapp = async (whatsappNumber, token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/whatsapp`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ whatsapp_number: whatsappNumber }),
+  })
+  if (!response || !response.ok) {
+    const error = await response?.json().catch(() => ({}))
+    throw new Error(error?.detail || "Failed to save WhatsApp number")
+  }
+  return response.json()
+}
+
+// Builds a wa.me deep link from whatever format the vendor entered
+// (0244123456, +233244123456, 233244123456, with spaces/dashes, etc).
+// Assumes Ghana (+233) when a local 0-prefixed number is given, since
+// that's this app's userbase — adjust here if the userbase becomes
+// multi-country later.
+export const buildWhatsappLink = (whatsappNumber, message = "") => {
+  if (!whatsappNumber) return null
+  let digits = whatsappNumber.replace(/[^0-9]/g, "")
+  if (digits.startsWith("0")) digits = "233" + digits.slice(1)
+  const text = message ? `?text=${encodeURIComponent(message)}` : ""
+  return `https://wa.me/${digits}${text}`
+}

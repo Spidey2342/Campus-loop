@@ -92,7 +92,7 @@ function CreateListingPage() {
           <ArrowLeft size={20} />
         </button>
         <h1 className="font-semibold text-lg flex-1">New Listing</h1>
-        {sellerStatus.source === "trial" && (
+        {sellerStatus.daysLeft !== null && sellerStatus.trialEndsAt && (
           <div className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 rounded-full">
             <Clock size={12} />
             {sellerStatus.daysLeft} {sellerStatus.daysLeft === 1 ? "day" : "days"} left

@@ -58,12 +58,12 @@ function SellerAccountCard() {
         </span>
       </div>
 
-      {status.source === "trial" && (
+      {status.daysLeft !== null && status.trialEndsAt && (
         <div className="flex items-center gap-1.5 text-xs text-amber-400 mb-3">
           <Clock size={12} />
           {status.daysLeft > 0
-            ? `${status.daysLeft} ${status.daysLeft === 1 ? "day" : "days"} left in your free trial`
-            : "Your trial ends today"}
+            ? `${status.daysLeft} ${status.daysLeft === 1 ? "day" : "days"} left`
+            : "Expires today"}
         </div>
       )}
 
