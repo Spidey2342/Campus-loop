@@ -114,6 +114,26 @@ export const followUser = async (username, token) => {
   if (!response.ok) throw new Error("Failed to follow user");
   return response.json();
 };
+
+// --- ONBOARDING ---
+
+export const getOnboardingSuggestions = async (token) => {
+  const response = await fetch(`${BASE_URL}/users/onboarding/suggestions`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to load suggestions");
+  return response.json();
+};
+
+export const completeOnboarding = async (token) => {
+  const response = await fetch(`${BASE_URL}/users/onboarding/complete`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Failed to complete onboarding");
+  return response.json();
+};
+
 // --- REELS ---
 
 export const uploadReel = async (formData, token) => {

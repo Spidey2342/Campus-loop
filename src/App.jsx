@@ -11,6 +11,7 @@ import Login from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import SignUp from './pages/SignUp'
+import OnboardingPage from './pages/OnboardingPage'
 import LandingPage from './pages/LandingPage'
 import Feedpage from './pages/Feedpage'
 import UploadPage from './pages/UploadPage'
@@ -55,6 +56,9 @@ function App() {
       <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Protected routes — logged out users get redirected to login */}
+      <Route path="/onboarding" element={
+        <ProtectedRoute><OnboardingPage /></ProtectedRoute>
+      } />
       <Route path="/feed" element={
         <ProtectedRoute><Feedpage /></ProtectedRoute>
       } />

@@ -44,11 +44,14 @@ function Login() {
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Success — go to where they came from or feed
+      // Success — go to where they came from, or onboarding if they never
+      // finished it, or feed
       const redirect = localStorage.getItem('redirect_after_login')
       if (redirect) {
         localStorage.removeItem('redirect_after_login')
         navigate(redirect)
+      } else if (!data.user.has_completed_onboarding) {
+        navigate('/onboarding')
       } else {
         navigate('/feed')
       }

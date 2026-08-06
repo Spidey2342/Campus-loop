@@ -53,7 +53,7 @@ function SignUp() {
 
       localStorage.setItem("token", data.access_token)
       localStorage.setItem("user", JSON.stringify(data.user))
-      navigate("/feed")
+      navigate(data.user.has_completed_onboarding ? "/feed" : "/onboarding")
 
     } catch (err) {
       setError(err.message)
