@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react'
 import VideoInfo from '../layouts/VideoInfo'
 import ActionBar from '../layouts/ActionBar'
 import { Heart, RotateCcw, ChevronDown } from 'lucide-react'
-import { likeReel, viewReel } from '../../services/api'
+import { likeReel, viewReel, followUser } from '../../services/api'
 import { useNavigate } from 'react-router-dom'
 
 function VideoCard({ reel, onDelete, isActive, shouldPreload, onNext }) {
   const [showHeart, setShowHeart]     = useState(false)
   const [isLiked, setIsLiked]         = useState(reel.is_liked)
   const [likesCount, setLikesCount]   = useState(reel.likes_count)
+  const [isFollowingOwner, setIsFollowingOwner] = useState(reel.is_following_owner)
   const [viewCounted, setViewCounted] = useState(false)
   const [ended, setEnded]             = useState(false)
   const [progress, setProgress]       = useState(0)
@@ -24,6 +25,17 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload, onNext }) {
       setLikesCount(data.likes_count)
     } catch (err) {
       console.error(err)
+    }
+  }
+
+  const handleFollow = async () => {
+    if (isFollowingOwner) return // already following — "+" is hidden anyway, this is just a safety net
+    setIsFollowingOwner(true) // optimistic — the badge disappears immediately on tap
+    try {
+      await followUser(reel.owner_username, token)
+    } catch (err) {
+      console.error(err)
+      setIsFollowingOwner(false) // roll back if the request actually failed
     }
   }
 
@@ -167,6 +179,8 @@ function VideoCard({ reel, onDelete, isActive, shouldPreload, onNext }) {
         isLiked={isLiked}
         likesCount={likesCount}
         onLike={handleLike}
+        isFollowingOwner={isFollowingOwner}
+        onFollow={handleFollow}
         onDelete={onDelete}
         onDownload={handleDownload}
       />

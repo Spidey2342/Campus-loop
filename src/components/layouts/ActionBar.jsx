@@ -6,7 +6,7 @@ import ReportModal from './ReportModal'
 import ShareModal from './ShareModal'
 import { deleteReel } from '../../services/api'
 
-function ActionBar({ reel, isLiked, likesCount, onLike, onDelete, onDownload }) {
+function ActionBar({ reel, isLiked, likesCount, onLike, isFollowingOwner, onFollow, onDelete, onDownload }) {
   const [showComments, setShowComments] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
   const [commentsCount, setCommentsCount] = useState(reel.comments_count)
@@ -73,9 +73,15 @@ function ActionBar({ reel, isLiked, likesCount, onLike, onDelete, onDownload }) 
             src={reel.owner_avatar}
             className="w-12 h-12 rounded-full border-2 border-white object-cover"
           />
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-teal-500 rounded-full p-1">
-            <Plus size={14} />
-          </div>
+          {!isFollowingOwner && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onFollow?.() }}
+              className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-teal-500 rounded-full p-1"
+              aria-label={`Follow ${reel.owner_username}`}
+            >
+              <Plus size={14} />
+            </button>
+          )}
         </div>
 
         {/* Like */}
