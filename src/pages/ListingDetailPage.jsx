@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, GraduationCap, BadgeCheck, MessageCircle, Flag, Pencil } from 'lucide-react'
-import { getListing, startListingChat, buildWhatsappLink } from '../services/marketplaceApi'
+import { ArrowLeft, GraduationCap, BadgeCheck, MessageCircle, Flag, Pencil, Crown } from 'lucide-react'
+import { getListing, startListingChat, buildWhatsappLink, trackListingClick } from '../services/marketplaceApi'
 
 function WhatsAppIcon({ size = 18, className = "" }) {
   return (
@@ -114,7 +114,11 @@ function ListingDetailPage() {
 
         {/* Seller card */}
         <div
-          onClick={() => navigate(`/profile/${listing.seller.username}`)}
+          onClick={() => navigate(
+            listing.seller.is_pro_seller
+              ? `/store/${listing.seller.username}`
+              : `/profile/${listing.seller.username}`
+          )}
           className="flex items-center gap-3 bg-white/10 rounded-xl p-3.5 mt-6 cursor-pointer hover:bg-white/[0.15] transition-all"
         >
           {listing.seller.avatar_url ? (
@@ -128,6 +132,14 @@ function ListingDetailPage() {
             <div className="flex items-center gap-1">
               <p className="font-semibold text-sm truncate">{listing.seller.full_name}</p>
               {listing.seller.is_verified && <BadgeCheck size={14} className="text-teal-400 flex-shrink-0" />}
+              {listing.seller.is_pro_seller && (
+                <span
+                  className="flex items-center gap-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                  title="Verified Vendor — Campus Market Pro"
+                >
+                  <Crown size={9} /> Vendor
+                </span>
+              )}
             </div>
             <p className="text-xs text-gray-400">@{listing.seller.username}</p>
             <div className="flex items-center gap-1 mt-0.5">
@@ -161,6 +173,7 @@ function ListingDetailPage() {
               )}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackListingClick(listing.id, "whatsapp", token)}
               className="w-14 flex-shrink-0 bg-[#25D366] text-black rounded-xl flex items-center justify-center"
               aria-label="Chat on WhatsApp"
             >

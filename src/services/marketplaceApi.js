@@ -258,3 +258,49 @@ export const buildWhatsappLink = (whatsappNumber, message = "") => {
   const text = message ? `?text=${encodeURIComponent(message)}` : ""
   return `https://wa.me/${digits}${text}`
 }
+
+// --- CAMPUS MARKET PRO: STOREFRONT ---
+
+export const getStorefront = async (username, token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/store/${username}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Storefront not found")
+  return response.json()
+}
+
+export const updateStorefront = async ({ storeName, storeBio, storeHours, bannerFile }, token) => {
+  const formData = new FormData()
+  if (storeName !== undefined) formData.append("store_name", storeName)
+  if (storeBio !== undefined) formData.append("store_bio", storeBio)
+  if (storeHours !== undefined) formData.append("store_hours", storeHours)
+  if (bannerFile) formData.append("banner", bannerFile)
+
+  const response = await fetch(`${BASE_URL}/marketplace/store`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.detail || "Failed to save storefront")
+  }
+  return response.json()
+}
+
+export const getStoreAnalytics = async (token) => {
+  const response = await authFetch(`${BASE_URL}/marketplace/store/analytics`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response || !response.ok) throw new Error("Failed to load analytics")
+  return response.json()
+}
+
+// Fire-and-forget — never blocks or throws visibly, since a missed click
+// ping shouldn't interrupt the buyer actually going to WhatsApp.
+export const trackListingClick = (listingId, clickType, token) => {
+  fetch(`${BASE_URL}/marketplace/listings/${listingId}/track-click?click_type=${clickType}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => {})
+}

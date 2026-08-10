@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw, Plus, Star, Check } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw, Plus, Star, Check, Store } from 'lucide-react'
 import { getMyListings, updateListingStatus, deleteListing, getFeaturePricing, initializeFeaturePayment, getMyWhatsapp, setMyWhatsapp } from '../services/marketplaceApi'
 
 function WhatsAppIcon({ size = 16, className = "" }) {
@@ -149,12 +149,21 @@ function MyListingsPage() {
           </button>
           <h1 className="font-semibold text-lg">My Listings</h1>
         </div>
-        <button
-          onClick={() => navigate("/marketplace/new")}
-          className="bg-teal-500 text-black rounded-full p-2"
-        >
-          <Plus size={16} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate("/marketplace/storefront")}
+            className="bg-white/10 rounded-full p-2"
+            aria-label="My Storefront"
+          >
+            <Store size={16} />
+          </button>
+          <button
+            onClick={() => navigate("/marketplace/new")}
+            className="bg-teal-500 text-black rounded-full p-2"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
       </div>
 
       {/* WhatsApp contact settings */}

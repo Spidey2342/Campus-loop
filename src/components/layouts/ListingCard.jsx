@@ -1,5 +1,5 @@
 import React from 'react'
-import { GraduationCap, BadgeCheck, Star } from 'lucide-react'
+import { GraduationCap, BadgeCheck, Star, Crown } from 'lucide-react'
 
 function getInitials(name) {
   if (!name) return "?"
@@ -59,6 +59,9 @@ function ListingCard({ listing, onClick }) {
           <p className="text-xs text-gray-400 truncate">@{listing.seller.username}</p>
           {listing.seller.is_verified && (
             <BadgeCheck size={11} className="text-teal-400 flex-shrink-0" />
+          )}
+          {listing.seller.is_pro_seller && (
+            <Crown size={10} className="text-amber-400 flex-shrink-0" />
           )}
         </div>
         <div className="flex items-center gap-1 mt-1">
