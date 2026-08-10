@@ -26,6 +26,7 @@ function ListingDetailPage() {
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0)
 
   useEffect(() => {
     const load = async () => {
@@ -87,12 +88,50 @@ function ListingDetailPage() {
         </button>
       </div>
 
-      {/* Image */}
-      <div className="aspect-square bg-gradient-to-br from-teal-800 to-teal-950 flex items-center justify-center">
-        {listing.photos?.[0] ? (
-          <img src={listing.photos[0]} className="w-full h-full object-cover" />
+      {/* Photo gallery — swipeable when there's more than one */}
+      <div className="relative aspect-square bg-gradient-to-br from-teal-800 to-teal-950">
+        {listing.photos?.length > 0 ? (
+          <>
+            <div
+              onScroll={(e) => {
+                const container = e.currentTarget
+                const index = Math.round(container.scrollLeft / container.clientWidth)
+                setActivePhotoIndex(index)
+              }}
+              className="flex w-full h-full overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {listing.photos.map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  className="w-full h-full object-cover flex-shrink-0 snap-center"
+                />
+              ))}
+            </div>
+
+            {listing.photos.length > 1 && (
+              <>
+                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                  <p className="text-xs font-medium">{activePhotoIndex + 1}/{listing.photos.length}</p>
+                </div>
+                <div className="absolute bottom-3 left-0 w-full flex items-center justify-center gap-1.5">
+                  {listing.photos.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-1.5 rounded-full transition-all ${
+                        i === activePhotoIndex ? "w-5 bg-white" : "w-1.5 bg-white/40"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         ) : (
-          <span className="text-white/30 text-sm font-medium">{listing.category}</span>
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-white/30 text-sm font-medium">{listing.category}</span>
+          </div>
         )}
       </div>
 
