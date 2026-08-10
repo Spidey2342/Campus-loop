@@ -149,9 +149,10 @@ export const uploadReel = async (formData, token) => {
   return response.json();
 };
 
-export const getFeed = async (token, type = "foryou", skip = 0, loop = 0) => {
+export const getFeed = async (token, type = "foryou", skip = 0, loop = 0, sessionSeed = "") => {
+  const seedParam = sessionSeed ? `&session_seed=${encodeURIComponent(sessionSeed)}` : ""
   const response = await authFetch(
-    `${BASE_URL}/reels/feed?type=${type}&skip=${skip}&limit=10&loop=${loop}`,
+    `${BASE_URL}/reels/feed?type=${type}&skip=${skip}&limit=10&loop=${loop}${seedParam}`,
     { headers: { Authorization: `Bearer ${token}` } }
   )
   if (!response.ok) throw new Error("Failed to load feed")

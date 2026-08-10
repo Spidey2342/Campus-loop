@@ -12,6 +12,12 @@ function VideoFeed({ feedType }) {
   const token = localStorage.getItem('token')
   const containerRef = useRef(null)
   const loadingRef   = useRef(false)   // prevent double-fetches
+  // One random seed per page load — sent on every /reels/feed call during
+  // this visit so pagination stays stable while scrolling, but an actual
+  // browser refresh remounts this component and gets a fresh seed, giving
+  // a genuinely different shuffle each time (like TikTok), instead of the
+  // old behavior of the same order all day.
+  const sessionSeedRef = useRef(`${Date.now()}-${Math.random().toString(36).slice(2)}`)
 
   const loadReels = useCallback(async (reset = false) => {
     if (loadingRef.current) return
@@ -25,7 +31,7 @@ function VideoFeed({ feedType }) {
       }
 
       const currentSkip = reset ? 0 : skip
-      const data = await getFeed(token, feedType, currentSkip)
+      const data = await getFeed(token, feedType, currentSkip, 0, sessionSeedRef.current)
       const safeData = Array.isArray(data) ? data : []
 
       if (reset) {
@@ -38,7 +44,7 @@ function VideoFeed({ feedType }) {
         // change anything — same seed, same order, verbatim repeat).
         const nextLoop = loopCount + 1
         setLoopCount(nextLoop)
-        const loopData = await getFeed(token, feedType, 0, nextLoop)
+        const loopData = await getFeed(token, feedType, 0, nextLoop, sessionSeedRef.current)
         const loopSafe = Array.isArray(loopData) ? loopData : []
         setReels(prev => [...prev, ...loopSafe])
         setSkip(loopSafe.length)
@@ -78,7 +84,7 @@ function VideoFeed({ feedType }) {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const fresh = await getFeed(token, feedType, 0)
+        const fresh = await getFeed(token, feedType, 0, 0, sessionSeedRef.current)
         const freshData = Array.isArray(fresh) ? fresh : []
         setReels(prev => {
           if (!prev.length || !freshData.length) return prev
