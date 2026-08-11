@@ -1,15 +1,27 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { GraduationCap, Check, UserPlus, BadgeCheck, Crown } from 'lucide-react'
+import { GraduationCap, Check, UserPlus, BadgeCheck, Crown, Bell, Share2, Plus } from 'lucide-react'
 import SchoolPicker from '../components/layouts/SchoolPicker'
 import { editProfile, followUser, getOnboardingSuggestions, completeOnboarding } from '../services/api'
+
+// iPadOS 13+ reports as "MacIntel" in the user agent, so a touch-point
+// check catches those too — a real Mac has no touch points at all.
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+}
+
+function isStandalone() {
+  return window.navigator.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches
+}
 
 function OnboardingPage() {
   const navigate = useNavigate()
   const token = localStorage.getItem("token")
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}")
 
-  const [step, setStep] = useState("school") // "school" | "follow"
+  const [step, setStep] = useState("school") // "school" | "follow" | "notify"
 
   // --- Step 1: school ---
   const [school, setSchool] = useState(storedUser.school_name || "")
@@ -67,6 +79,18 @@ function OnboardingPage() {
     }
   }
 
+  const goToNextAfterFollow = () => {
+    // Real push notifications on iOS only work for a Home-Screen-installed
+    // app — a plain Safari tab can't receive them at all, no matter what
+    // permission the user grants. Show the install instructions only when
+    // they'd actually matter; everyone else skips straight past this.
+    if (isIOS() && !isStandalone()) {
+      setStep("notify")
+    } else {
+      finishOnboarding()
+    }
+  }
+
   const finishOnboarding = async () => {
     if (finishing) return
     setFinishing(true)
@@ -86,7 +110,7 @@ function OnboardingPage() {
       {/* Progress dots */}
       <div className="flex items-center justify-center gap-2 pt-8 pb-2">
         <div className={`h-1.5 rounded-full transition-all ${step === "school" ? "w-8 bg-teal-400" : "w-6 bg-teal-400/40"}`} />
-        <div className={`h-1.5 rounded-full transition-all ${step === "follow" ? "w-8 bg-teal-400" : "w-6 bg-white/15"}`} />
+        <div className={`h-1.5 rounded-full transition-all ${step === "follow" || step === "notify" ? "w-8 bg-teal-400" : "w-6 bg-white/15"}`} />
       </div>
 
       {step === "school" ? (
@@ -115,11 +139,11 @@ function OnboardingPage() {
             {savingSchool ? "Saving..." : "Confirm & Continue"}
           </button>
         </div>
-      ) : (
+      ) : step === "follow" ? (
         <div className="flex-1 flex flex-col px-6 pt-6">
           <div className="flex items-center justify-between mb-1">
             <h1 className="text-2xl font-bold">Follow people to get started</h1>
-            <button onClick={finishOnboarding} className="text-sm text-gray-400 flex-shrink-0">
+            <button onClick={goToNextAfterFollow} className="text-sm text-gray-400 flex-shrink-0">
               Skip
             </button>
           </div>
@@ -177,11 +201,57 @@ function OnboardingPage() {
           </div>
 
           <button
-            onClick={finishOnboarding}
+            onClick={goToNextAfterFollow}
             disabled={finishing}
             className="w-full bg-teal-500 text-black py-4 rounded-xl font-semibold disabled:opacity-60 mb-8"
           >
             {finishing ? "Taking you in..." : "Continue to Feed"}
+          </button>
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col px-6 pt-10">
+          <div className="w-14 h-14 rounded-2xl bg-teal-500/15 flex items-center justify-center mb-5">
+            <Bell size={26} className="text-teal-400" />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">Turn on notifications</h1>
+          <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+            On iPhone, Apple only allows notifications for apps added to your Home Screen —
+            it takes a few seconds:
+          </p>
+
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 text-sm font-bold">1</div>
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-sm text-gray-300">Tap the Share button</span>
+                <Share2 size={16} className="text-teal-400" />
+                <span className="text-sm text-gray-300">at the bottom of Safari</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 text-sm font-bold">2</div>
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-sm text-gray-300">Scroll down and tap</span>
+                <Plus size={16} className="text-teal-400" />
+                <span className="text-sm text-gray-300">"Add to Home Screen"</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 text-sm font-bold">3</div>
+              <p className="text-sm text-gray-300 pt-1">
+                Open Campus Vibe from the new Home Screen icon from now on
+              </p>
+            </div>
+          </div>
+
+          <div className="flex-1" />
+
+          <button
+            onClick={finishOnboarding}
+            disabled={finishing}
+            className="w-full bg-teal-500 text-black py-4 rounded-xl font-semibold disabled:opacity-60 mb-8"
+          >
+            {finishing ? "Taking you in..." : "Got it, take me to Feed"}
           </button>
         </div>
       )}
