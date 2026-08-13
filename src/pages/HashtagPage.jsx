@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Play } from 'lucide-react'
 import VideoCard from '../components/video/VideoCard'
+import Sidebar from '../components/layouts/Sidebar'
 
 const BASE_URL = 'https://campus-backend-moz5.onrender.com'
 
@@ -56,11 +57,12 @@ function HashtagPage() {
   const formatCount = (n) => n >= 1000000 ? `${(n/1000000).toFixed(1)}M` : n >= 1000 ? `${(n/1000).toFixed(1)}K` : n
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white lg:pl-60">
+      <Sidebar />
 
       {/* ── Grid view ── */}
       {activeIndex === null ? (
-        <>
+        <div className="lg:max-w-3xl lg:mx-auto">
           {/* Header */}
           <div className="px-4 pt-12 pb-4 border-b border-white/10">
             <button onClick={() => navigate(-1)} className="mb-4">
@@ -90,7 +92,7 @@ function HashtagPage() {
 
           {/* Reel grid */}
           {loading ? (
-            <div className="grid grid-cols-3 gap-0.5 mt-0.5">
+            <div className="grid grid-cols-3 lg:grid-cols-5 gap-0.5 mt-0.5">
               {Array.from({ length: 9 }).map((_, i) => (
                 <div key={i} className="aspect-[9/16] animate-pulse bg-white/10" />
               ))}
@@ -110,7 +112,7 @@ function HashtagPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-0.5 mt-0.5">
+            <div className="grid grid-cols-3 lg:grid-cols-5 gap-0.5 mt-0.5">
               {reels.map((reel, i) => (
                 <button
                   key={reel.id}
@@ -139,10 +141,11 @@ function HashtagPage() {
               ))}
             </div>
           )}
-        </>
+        </div>
       ) : (
         // ── Feed view — full screen reel player ──
-        <>
+        <div className="h-[calc(100vh-0px)] lg:flex lg:justify-center lg:bg-[#0a0a0a]">
+          <div className="relative h-full w-full lg:max-w-[420px] lg:border-x lg:border-white/10">
           {/* Back to grid */}
           <button
             onClick={() => setActiveIndex(null)}
@@ -176,7 +179,8 @@ function HashtagPage() {
               </div>
             ))}
           </div>
-        </>
+          </div>
+        </div>
       )}
     </div>
   )

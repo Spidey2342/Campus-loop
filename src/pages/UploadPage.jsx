@@ -4,6 +4,7 @@ import TopView from '../components/layouts/TopView'
 import { Send } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { uploadReel } from '../services/api'
+import Sidebar from '../components/layouts/Sidebar'
 
 function UploadPage() {
   const navigate = useNavigate()
@@ -61,7 +62,9 @@ function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-teal-900 text-white px-4 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-teal-900 text-white px-4 py-4 lg:pl-60">
+      <Sidebar />
+      <div className="lg:max-w-2xl lg:mx-auto">
       <TopView />
 
       {/* File picker or editor */}
@@ -130,6 +133,7 @@ function UploadPage() {
         <Send size={18} />
         {loading ? 'Uploading...' : `Post ${isPhoto ? 'Photo' : 'Reel'} to CampusVibe`}
       </button>
+      </div>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { verifyFeaturePayment } from '../services/marketplaceApi'
+import Sidebar from '../components/layouts/Sidebar'
 
 function PaymentCallbackPage() {
   const [searchParams] = useSearchParams()
@@ -36,7 +37,8 @@ function PaymentCallbackPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 text-center lg:pl-60">
+      <Sidebar />
       {state === "verifying" && (
         <>
           <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin mb-4" />

@@ -2,9 +2,9 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Send, Plus, MoreVertical, Hand, ShoppingBag, CheckCheck } from 'lucide-react'
 import { getMessages } from '../services/api'
+import Sidebar from '../components/layouts/Sidebar'
 
 const BASE_URL = "https://campus-backend-moz5.onrender.com"
-
 
 function ChatPage() {
   const { conversationId } = useParams()
@@ -152,7 +152,9 @@ function ChatPage() {
   const listingContext = convInfo?.listing || null
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col">
+    <div className="h-screen bg-black text-white flex flex-col lg:pl-60">
+      <Sidebar />
+      <div className="flex flex-col h-full w-full lg:max-w-2xl lg:mx-auto lg:border-x lg:border-white/10">
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 flex-shrink-0">
@@ -336,6 +338,7 @@ function ChatPage() {
         >
           <Send size={16} className="text-black" />
         </button>
+      </div>
       </div>
     </div>
   )

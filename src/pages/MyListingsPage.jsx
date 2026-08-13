@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Pencil, Trash2, CheckCircle2, RotateCcw, Plus, Star, Check, Store } from 'lucide-react'
 import { getMyListings, updateListingStatus, deleteListing, getFeaturePricing, initializeFeaturePayment, getMyWhatsapp, setMyWhatsapp } from '../services/marketplaceApi'
+import Sidebar from '../components/layouts/Sidebar'
 
 function WhatsAppIcon({ size = 16, className = "" }) {
   return (
@@ -141,7 +142,8 @@ function MyListingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-10">
+    <div className="min-h-screen bg-black text-white pb-10 lg:pl-60">
+      <div className="lg:max-w-2xl lg:mx-auto">
       <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)}>
@@ -307,6 +309,7 @@ function MyListingsPage() {
           </div>
         )}
       </div>
+      </div>
 
       {/* Delete confirmation */}
       {confirmDeleteId && (
@@ -403,6 +406,7 @@ function MyListingsPage() {
           </div>
         </div>
       )}
+      <Sidebar />
     </div>
   )
 }

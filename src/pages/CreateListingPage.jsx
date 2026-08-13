@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ImagePlus, X, Clock } from 'lucide-react'
 import { createListing, CATEGORIES, getSellerStatus } from '../services/marketplaceApi'
+import Sidebar from '../components/layouts/Sidebar'
 
 const SELLABLE_CATEGORIES = CATEGORIES.filter((c) => c !== "All")
 
@@ -49,7 +50,8 @@ function CreateListingPage() {
 
   if (statusLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center lg:pl-60">
+        <Sidebar />
         <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -86,7 +88,9 @@ function CreateListingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-10">
+    <div className="min-h-screen bg-black text-white pb-10 lg:pl-60">
+      <Sidebar />
+      <div className="lg:max-w-2xl lg:mx-auto">
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
         <button onClick={() => navigate(-1)}>
           <ArrowLeft size={20} />
@@ -208,6 +212,7 @@ function CreateListingPage() {
         >
           {submitting ? "Posting..." : "Post Listing"}
         </button>
+      </div>
       </div>
     </div>
   )

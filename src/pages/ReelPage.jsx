@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import VideoCard from '../components/video/VideoCard'
 import { ReelSkeleton } from '../components/layouts/Skeleton'
+import Sidebar from '../components/layouts/Sidebar'
 
 const BASE_URL = 'https://campus-backend-moz5.onrender.com'
 
@@ -38,22 +39,32 @@ function ReelPage() {
   }, [reelId])
 
   if (loading) return (
-    <div className="h-screen bg-black">
-      <ReelSkeleton />
+    <div className="h-screen bg-black lg:pl-60">
+      <Sidebar />
+      <div className="h-full lg:flex lg:justify-center lg:bg-[#0a0a0a]">
+        <div className="h-full w-full lg:max-w-[420px] lg:border-x lg:border-white/10">
+          <ReelSkeleton />
+        </div>
+      </div>
     </div>
   )
 
   if (!reel) return null
 
   return (
-    <div className="h-screen bg-black">
-      <button
-        onClick={() => navigate(-1)}
-        className="absolute top-4 left-4 z-50 text-white bg-black/40 rounded-full p-2"
-      >
-        ←
-      </button>
-      <VideoCard reel={reel} isActive={true} />
+    <div className="h-screen bg-black lg:pl-60">
+      <Sidebar />
+      <div className="h-full lg:flex lg:justify-center lg:bg-[#0a0a0a]">
+        <div className="relative h-full w-full lg:max-w-[420px] lg:border-x lg:border-white/10">
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-4 left-4 z-50 text-white bg-black/40 rounded-full p-2"
+          >
+            ←
+          </button>
+          <VideoCard reel={reel} isActive={true} />
+        </div>
+      </div>
     </div>
   )
 }

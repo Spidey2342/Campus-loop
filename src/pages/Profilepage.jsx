@@ -8,6 +8,7 @@ import EditProfileModal from '../components/layouts/EditProfileModal'
 import SellerAccountCard from '../components/layouts/SellerAccountCard'
 import { ProfileHeaderSkeleton, ProfileGridSkeleton } from '../components/layouts/Skeleton'
 import { getProfile, getUserReels } from '../services/api'
+import Sidebar from '../components/layouts/Sidebar'
 
 function Profilepage() {
   const { username } = useParams()
@@ -70,14 +71,17 @@ function Profilepage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white lg:pl-60">
+      <div className="lg:max-w-3xl lg:mx-auto">
       <ProfileHeaderSkeleton />
       <ProfileGridSkeleton />
+      </div>
+      <Sidebar />
     </div>
   )
 
   if (!profile) return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4 lg:pl-60">
       <p className="text-4xl">👤</p>
       <p className="font-semibold">Profile not found</p>
       <p className="text-gray-400 text-sm text-center px-8">
@@ -89,11 +93,13 @@ function Profilepage() {
       >
         Go to feed
       </button>
+      <Sidebar />
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white lg:pl-60">
+      <div className="lg:max-w-3xl lg:mx-auto">
       {/* Pass real username and isOwnProfile to header */}
       <ProfileHeader
         username={profile.username}
@@ -118,6 +124,7 @@ function Profilepage() {
           loadingMore={loadingMore}
         />
       </div>
+      </div>
 
       {showEditModal && (
         <EditProfileModal
@@ -135,6 +142,7 @@ function Profilepage() {
           }}
         />
       )}
+      <Sidebar />
     </div>
   )
 }

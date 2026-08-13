@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, GraduationCap, BadgeCheck, MessageCircle, Flag, Pencil, Crown } from 'lucide-react'
 import { getListing, startListingChat, buildWhatsappLink, trackListingClick } from '../services/marketplaceApi'
+import Sidebar from '../components/layouts/Sidebar'
 
 function WhatsAppIcon({ size = 18, className = "" }) {
   return (
@@ -59,7 +60,8 @@ function ListingDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center lg:pl-60">
+        <Sidebar />
         <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -67,7 +69,8 @@ function ListingDetailPage() {
 
   if (!listing) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-3">
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-3 lg:pl-60">
+        <Sidebar />
         <p className="text-gray-400 text-sm">This listing doesn't exist anymore.</p>
         <button onClick={() => navigate("/marketplace")} className="text-teal-400 text-sm font-medium">
           Back to Marketplace
@@ -77,7 +80,9 @@ function ListingDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-28">
+    <div className="min-h-screen bg-black text-white pb-28 lg:pl-60">
+      <Sidebar />
+      <div className="lg:max-w-2xl lg:mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
         <button onClick={() => navigate(-1)}>
@@ -188,14 +193,16 @@ function ListingDetailPage() {
           </div>
         </div>
       </div>
+      </div>
 
       {/* Buyers get in-app chat, plus a WhatsApp shortcut if the seller has
           set a number. Owners see an Edit CTA instead. */}
       {!isOwnListing ? (
         <div
-          className="fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-md border-t border-white/10 px-4 py-3 flex gap-2.5"
+          className="fixed bottom-0 left-0 w-full lg:left-60 lg:w-[calc(100%-15rem)] bg-black/90 backdrop-blur-md border-t border-white/10 px-4 py-3 flex gap-2.5 lg:justify-center"
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
         >
+          <div className="flex gap-2.5 w-full lg:max-w-2xl">
           <button
             onClick={handleChatWithSeller}
             disabled={starting}
@@ -219,12 +226,14 @@ function ListingDetailPage() {
               <WhatsAppIcon size={22} />
             </a>
           )}
+          </div>
         </div>
       ) : (
         <div
-          className="fixed bottom-0 left-0 w-full bg-black/90 backdrop-blur-md border-t border-white/10 px-4 py-3"
+          className="fixed bottom-0 left-0 w-full lg:left-60 lg:w-[calc(100%-15rem)] bg-black/90 backdrop-blur-md border-t border-white/10 px-4 py-3 lg:flex lg:justify-center"
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
         >
+          <div className="w-full lg:max-w-2xl">
           <button
             onClick={() => navigate(`/marketplace/${listing.id}/edit`)}
             className="w-full bg-white/10 text-white py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2"
@@ -232,6 +241,7 @@ function ListingDetailPage() {
             <Pencil size={18} />
             Edit Listing
           </button>
+          </div>
         </div>
       )}
     </div>

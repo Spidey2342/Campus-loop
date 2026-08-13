@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Shield, CheckCircle, XCircle, AlertTriangle, Eye, Filter } from 'lucide-react'
 import { getReports, reviewReport } from '../services/api'
+import Sidebar from '../components/layouts/Sidebar'
 
 const STATUS_TABS = [
   { value: "pending",   label: "Pending" },
@@ -84,7 +85,9 @@ function AdminPage() {
   if (!currentUser.is_admin) return null
 
   return (
-    <div className="min-h-screen bg-black text-white pb-10">
+    <div className="min-h-screen bg-black text-white pb-10 lg:pl-60">
+      <Sidebar />
+      <div className="lg:max-w-4xl lg:mx-auto">
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10 sticky top-0 bg-black z-10">
@@ -246,6 +249,7 @@ function AdminPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }

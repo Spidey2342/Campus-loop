@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Search, X, ArrowLeft, Users } from "lucide-react"
-import BottomNav from "../components/layouts/BottomNav"
+import Navigation from "../components/layouts/Navigation"
 import { SchoolCardSkeleton, TrendingSkeleton, UserRowSkeleton } from "../components/layouts/Skeleton"
 import {
   getTopSchools, getTrendingTags, searchAll,
@@ -123,8 +123,8 @@ function DiscoverPage() {
   // ── HASHTAG VIEW ──
   if (selectedTag) {
     return (
-      <div className="min-h-screen bg-black text-white pb-24">
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
+      <div className="min-h-screen bg-black text-white pb-24 lg:pl-60">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10 lg:max-w-3xl lg:mx-auto">
           <button onClick={() => setSelectedTag(null)}>
             <ArrowLeft size={20} />
           </button>
@@ -135,7 +135,7 @@ function DiscoverPage() {
         </div>
 
         {loadingTag ? (
-          <div className="divide-y divide-white/5 p-4 space-y-2">
+          <div className="divide-y divide-white/5 p-4 space-y-2 lg:max-w-3xl lg:mx-auto">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="animate-pulse bg-white/10 rounded-xl aspect-[9/16]" />
             ))}
@@ -146,7 +146,7 @@ function DiscoverPage() {
             <p className="text-gray-400 text-sm">No reels with {selectedTag} yet</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-1 p-1">
+          <div className="grid grid-cols-3 lg:grid-cols-5 gap-1 p-1 lg:max-w-3xl lg:mx-auto">
             {tagReels.map((reel) => (
               <div
                 key={reel.id}
@@ -170,7 +170,7 @@ function DiscoverPage() {
             ))}
           </div>
         )}
-        <BottomNav />
+        <Navigation />
       </div>
     )
   }
@@ -178,8 +178,8 @@ function DiscoverPage() {
   // ── SCHOOL DETAIL VIEW ──
   if (selectedSchool) {
     return (
-      <div className="min-h-screen bg-black text-white pb-24">
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
+      <div className="min-h-screen bg-black text-white pb-24 lg:pl-60">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10 lg:max-w-3xl lg:mx-auto">
           <button onClick={() => { setSelectedSchool(null); setSchoolDetail(null) }}>
             <ArrowLeft size={20} />
           </button>
@@ -194,7 +194,7 @@ function DiscoverPage() {
         </div>
 
         {loadingSchool ? (
-          <div className="px-4 py-4 space-y-4">
+          <div className="px-4 py-4 space-y-4 lg:max-w-3xl lg:mx-auto">
             <div className="grid grid-cols-3 gap-1">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="animate-pulse bg-white/10 rounded-xl h-32" />
@@ -205,7 +205,7 @@ function DiscoverPage() {
             </div>
           </div>
         ) : schoolDetail ? (
-          <div className="px-4 py-4 space-y-6">
+          <div className="px-4 py-4 space-y-6 lg:max-w-3xl lg:mx-auto">
 
             {/* Reels grid */}
             {schoolDetail.reels.length > 0 && (
@@ -213,7 +213,7 @@ function DiscoverPage() {
                 <p className="text-sm font-semibold mb-3">
                   Reels from this school
                 </p>
-                <div className="grid grid-cols-3 gap-1">
+                <div className="grid grid-cols-3 lg:grid-cols-5 gap-1">
                   {schoolDetail.reels.map((reel) => (
                     <div
                       key={reel.id}
@@ -297,15 +297,15 @@ function DiscoverPage() {
             </div>
           </div>
         ) : null}
-        <BottomNav />
+        <Navigation />
       </div>
     )
   }
 
   // ── MAIN DISCOVER VIEW ──
   return (
-    <div className="min-h-screen bg-black text-white px-4 py-4 pb-24">
-
+    <div className="min-h-screen bg-black text-white px-4 py-4 pb-24 lg:pl-60">
+      <div className="lg:max-w-3xl lg:mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -542,8 +542,9 @@ function DiscoverPage() {
           )}
         </>
       )}
+      </div>
 
-      <BottomNav />
+      <Navigation />
     </div>
   )
 }

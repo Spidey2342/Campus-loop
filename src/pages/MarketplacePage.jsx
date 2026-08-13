@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Plus, X, ShoppingBag, ChevronRight, List } from 'lucide-react'
-import BottomNav from '../components/layouts/BottomNav'
+import Navigation from '../components/layouts/Navigation'
 import ListingCard from '../components/layouts/ListingCard'
 import { getListings, CATEGORIES, getSellerStatus } from '../services/marketplaceApi'
 
@@ -61,9 +61,10 @@ function MarketplacePage() {
   }, [category, myCampusOnly, query])
 
   return (
-    <div className="min-h-screen bg-black text-white pb-24">
+    <div className="min-h-screen bg-black text-white pb-24 lg:pl-60">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-md px-4 pt-5 pb-3 border-b border-white/10">
+        <div className="lg:max-w-5xl lg:mx-auto">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-bold">Marketplace</h1>
@@ -133,11 +134,12 @@ function MarketplacePage() {
           <span className={`w-2 h-2 rounded-full ${myCampusOnly ? "bg-teal-400" : "bg-gray-600"}`} />
           {currentUser.school_name ? `${currentUser.school_name} only` : "My campus only"}
         </button>
+        </div>
       </div>
 
       {/* Become-a-seller nudge — only for users who aren't sellers yet */}
       {!sellerStatus.isSeller && (
-        <div className="px-4 pt-4">
+        <div className="px-4 pt-4 lg:max-w-5xl lg:mx-auto">
           <button
             onClick={() => navigate("/marketplace/become-seller")}
             className="w-full flex items-center gap-3 bg-teal-500/10 border border-teal-500/25 rounded-xl px-4 py-3.5 text-left"
@@ -155,9 +157,9 @@ function MarketplacePage() {
       )}
 
       {/* Grid */}
-      <div className="px-4 py-4">
+      <div className="px-4 py-4 lg:max-w-5xl lg:mx-auto">
         {loading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {Array.from({ length: 6 }).map((_, i) => <ListingSkeleton key={i} />)}
           </div>
         ) : listings.length === 0 ? (
@@ -173,7 +175,7 @@ function MarketplacePage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {listings.map((listing) => (
               <ListingCard
                 key={listing.id}
@@ -185,7 +187,7 @@ function MarketplacePage() {
         )}
       </div>
 
-      <BottomNav />
+      <Navigation />
     </div>
   )
 }

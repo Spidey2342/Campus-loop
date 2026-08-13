@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, GraduationCap, Crown, Clock } from 'lucide-react'
 import { getStorefront, buildWhatsappLink } from '../services/marketplaceApi'
 import ListingCard from '../components/layouts/ListingCard'
+import Sidebar from '../components/layouts/Sidebar'
 
 function WhatsAppIcon({ size = 16, className = "" }) {
   return (
@@ -36,7 +37,8 @@ function StorefrontPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center lg:pl-60">
+        <Sidebar />
         <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -44,7 +46,8 @@ function StorefrontPage() {
 
   if (notFound || !store) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 text-center gap-3">
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 text-center gap-3 lg:pl-60">
+        <Sidebar />
         <p className="text-gray-400">This storefront doesn't exist (or isn't active right now).</p>
         <button onClick={() => navigate(-1)} className="text-teal-400 text-sm font-medium">
           Go back
@@ -54,7 +57,9 @@ function StorefrontPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-10">
+    <div className="min-h-screen bg-black text-white pb-10 lg:pl-60">
+      <Sidebar />
+      <div className="lg:max-w-3xl lg:mx-auto">
       {/* Banner */}
       <div className="relative h-40 bg-gradient-to-br from-teal-800 to-teal-950">
         {store.store_banner_url && (
@@ -128,7 +133,7 @@ function StorefrontPage() {
         {store.listings.length === 0 ? (
           <p className="text-gray-500 text-sm py-10 text-center">No active listings right now.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             {store.listings.map((listing) => (
               <ListingCard
                 key={listing.id}
@@ -138,6 +143,7 @@ function StorefrontPage() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   )

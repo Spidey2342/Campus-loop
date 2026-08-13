@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Search, Users } from 'lucide-react'
 import { startDM, createGroup } from '../services/api'
+import Sidebar from '../components/layouts/Sidebar'
 
 const BASE_URL = "https://campus-backend-moz5.onrender.com"
 
@@ -69,7 +70,9 @@ function NewMessagePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white lg:pl-60">
+      <Sidebar />
+      <div className="lg:max-w-2xl lg:mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
         <button onClick={() => navigate("/messages")}>
@@ -163,6 +166,7 @@ function NewMessagePage() {
             </div>
           )
         })}
+      </div>
       </div>
     </div>
   )

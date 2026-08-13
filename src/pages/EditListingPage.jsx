@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ImagePlus, X } from 'lucide-react'
 import { getListing, updateListing, CATEGORIES } from '../services/marketplaceApi'
+import Sidebar from '../components/layouts/Sidebar'
 
 const SELLABLE_CATEGORIES = CATEGORIES.filter((c) => c !== "All")
 
@@ -88,14 +89,17 @@ function EditListingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center lg:pl-60">
+        <Sidebar />
         <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-10">
+    <div className="min-h-screen bg-black text-white pb-10 lg:pl-60">
+      <Sidebar />
+      <div className="lg:max-w-2xl lg:mx-auto">
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
         <button onClick={() => navigate(-1)}>
           <ArrowLeft size={20} />
@@ -211,6 +215,7 @@ function EditListingPage() {
         >
           {submitting ? "Saving..." : "Save Changes"}
         </button>
+      </div>
       </div>
     </div>
   )

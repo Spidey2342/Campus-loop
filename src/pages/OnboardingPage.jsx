@@ -106,7 +106,7 @@ function OnboardingPage() {
   const getInitials = (name) => (name || "?").split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col lg:max-w-md lg:mx-auto">
       {/* Progress dots */}
       <div className="flex items-center justify-center gap-2 pt-8 pb-2">
         <div className={`h-1.5 rounded-full transition-all ${step === "school" ? "w-8 bg-teal-400" : "w-6 bg-teal-400/40"}`} />

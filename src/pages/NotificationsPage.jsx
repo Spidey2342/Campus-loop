@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Heart, MessageCircle, UserPlus, Bell } from 'lucide-react'
 import { getNotifications, markNotificationsRead } from '../services/api'
-import BottomNav from '../components/layouts/BottomNav'
+import Navigation from '../components/layouts/Navigation'
 import { NotificationSkeleton } from '../components/layouts/Skeleton'
 
 function NotificationsPage() {
@@ -52,7 +52,8 @@ function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-24">
+    <div className="min-h-screen bg-black text-white pb-24 lg:pl-60">
+      <div className="lg:max-w-2xl lg:mx-auto">
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
@@ -131,8 +132,9 @@ function NotificationsPage() {
           ))}
         </div>
       )}
+      </div>
 
-      <BottomNav />
+      <Navigation />
     </div>
   )
 }

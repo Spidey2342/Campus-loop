@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShoppingBag, Clock, Users, CheckCircle2 } from 'lucide-react'
 import { startSellerTrial } from '../services/marketplaceApi'
+import Sidebar from '../components/layouts/Sidebar'
 
 function BecomeSellerPage() {
   const navigate = useNavigate()
@@ -22,7 +23,9 @@ function BecomeSellerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-10">
+    <div className="min-h-screen bg-black text-white pb-10 lg:pl-60">
+      <Sidebar />
+      <div className="lg:max-w-2xl lg:mx-auto">
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
         <button onClick={() => navigate(-1)}>
           <ArrowLeft size={20} />
@@ -80,6 +83,7 @@ function BecomeSellerPage() {
         >
           {starting ? "Setting up..." : "Start my free week"}
         </button>
+      </div>
       </div>
     </div>
   )
