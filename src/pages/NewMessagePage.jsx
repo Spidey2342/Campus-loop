@@ -4,7 +4,7 @@ import { ArrowLeft, Search, Users } from 'lucide-react'
 import { startDM, createGroup } from '../services/api'
 import Sidebar from '../components/layouts/Sidebar'
 
-const BASE_URL = "https://campus-backend-moz5.onrender.com"
+const BASE_URL = "https://chale.alwaysdata.net"
 
 function NewMessagePage() {
   const navigate = useNavigate()

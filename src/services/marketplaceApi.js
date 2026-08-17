@@ -6,7 +6,7 @@
 // implements these endpoints (see app/routers/marketplace.py).
 // ============================================================================
 
-const BASE_URL = "https://campus-backend-moz5.onrender.com"
+const BASE_URL = "https://chale.alwaysdata.net"
 
 export const CATEGORIES = [
   "All", "Fashion", "Food", "Tech", "Beauty", "Tutoring", "Events", "Other",

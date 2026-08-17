@@ -2,8 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { X, Send } from 'lucide-react'
 import { commentOnReel } from '../../services/api'
 
-// ✅ uses environment variable instead of hardcoded localhost
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+const BASE_URL = "https://chale.alwaysdata.net"
 
 function CommentDrawer({ reel, token, onClose, onCommentAdded }) {
   const [comments, setComments] = useState([])

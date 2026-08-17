@@ -4,7 +4,7 @@ import { ArrowLeft, Send, Plus, MoreVertical, Hand, ShoppingBag, CheckCheck } fr
 import { getMessages } from '../services/api'
 import Sidebar from '../components/layouts/Sidebar'
 
-const BASE_URL = "https://campus-backend-moz5.onrender.com"
+const BASE_URL = "https://chale.alwaysdata.net"
 
 function ChatPage() {
   const { conversationId } = useParams()

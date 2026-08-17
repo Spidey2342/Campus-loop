@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, Search, Send, Share2, Copy, Check } from 'lucide-react'
 
-const BASE_URL = 'https://campus-backend-moz5.onrender.com'
+const BASE_URL = 'https://chale.alwaysdata.net'
 
 function ShareModal({ reel, onClose }) {
   const [conversations, setConversations] = useState([])

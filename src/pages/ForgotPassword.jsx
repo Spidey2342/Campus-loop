@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Video, Mail, CheckCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const BASE_URL = 'https://s-backend.onrender.com'
+const BASE_URL = 'https://chale.alwaysdata.net'
 
 function ForgotPassword() {
   const navigate = useNavigate()

@@ -4,7 +4,7 @@ import { ArrowLeft, Play } from 'lucide-react'
 import VideoCard from '../components/video/VideoCard'
 import Sidebar from '../components/layouts/Sidebar'
 
-const BASE_URL = 'https://campus-backend-moz5.onrender.com'
+const BASE_URL = 'https://chale.alwaysdata.net'
 
 function HashtagPage() {
   const { tag } = useParams()
