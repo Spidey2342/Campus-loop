@@ -1,10 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Send, Plus, MoreVertical, Hand, ShoppingBag, CheckCheck } from 'lucide-react'
+import { ArrowLeft, Send, Plus, MoreVertical, Hand, ShoppingBag, CheckCheck, Play } from 'lucide-react'
 import { getMessages } from '../services/api'
 import Sidebar from '../components/layouts/Sidebar'
 
 const BASE_URL = "https://chale.alwaysdata.net"
+
+// Matches any http(s) URL inside a message's text.
+const URL_REGEX = /(https?:\/\/[^\s]+)/g
+// A URL is treated as a shared reel specifically when it points at this
+// app's own /reel/{id} route — that's when we show a rich preview card
+// instead of just a plain clickable link.
+const REEL_LINK_REGEX = /\/reel\/([a-f0-9-]{36})/
 
 function ChatPage() {
   const { conversationId } = useParams()
@@ -16,6 +23,7 @@ function ChatPage() {
   const [text, setText] = useState("")
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [reelPreviews, setReelPreviews] = useState({}) // reelId -> {thumbnail_url, caption, owner_username, is_photo} | "error"
 
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
@@ -87,6 +95,39 @@ function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  // ✅ Whenever messages change, find any shared-reel links we haven't
+  // already fetched a preview for, and fetch them (once each, cached in
+  // reelPreviews so re-renders/polling don't refetch the same reel).
+  useEffect(() => {
+    const idsInMessages = new Set()
+    for (const msg of messages) {
+      if (!msg.text) continue
+      const urls = msg.text.match(URL_REGEX) || []
+      for (const url of urls) {
+        const match = url.match(REEL_LINK_REGEX)
+        if (match) idsInMessages.add(match[1])
+      }
+    }
+
+    const idsToFetch = [...idsInMessages].filter((id) => !(id in reelPreviews))
+    if (idsToFetch.length === 0) return
+
+    idsToFetch.forEach(async (reelId) => {
+      try {
+        const res = await fetch(`${BASE_URL}/reels/${reelId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!res.ok) throw new Error("not found")
+        const data = await res.json()
+        setReelPreviews((prev) => ({ ...prev, [reelId]: data }))
+      } catch (err) {
+        // Reel might've been deleted since the link was shared — mark it
+        // so we don't keep retrying every time messages re-render.
+        setReelPreviews((prev) => ({ ...prev, [reelId]: "error" }))
+      }
+    })
+  }, [messages])
+
   const sendMessage = async () => {
     if (!text.trim() || sending) return
 
@@ -150,6 +191,62 @@ function ChatPage() {
   }, {})
 
   const listingContext = convInfo?.listing || null
+
+  // Splits a message's text on any URLs, rendering plain text as-is and
+  // URLs as styled, clickable links. A link to this app's own /reel/{id}
+  // route navigates in-app (no full page reload) instead of opening a
+  // new tab like a genuinely external link would.
+  const renderMessageText = (msgText) => {
+    // split() with a capturing group in the regex returns the URL matches
+    // interspersed with the surrounding text — odd-looking but reliable,
+    // and avoids using a global regex's stateful .test()/.exec().
+    const parts = msgText.split(URL_REGEX)
+    return parts.map((part, i) => {
+      if (!part) return null
+      if (!part.startsWith("http://") && !part.startsWith("https://")) {
+        return <span key={i}>{part}</span>
+      }
+      const reelMatch = part.match(REEL_LINK_REGEX)
+      if (reelMatch) {
+        const reelId = reelMatch[1]
+        return (
+          <a
+            key={i}
+            href={part}
+            onClick={(e) => { e.preventDefault(); navigate(`/reel/${reelId}`) }}
+            className="underline break-all opacity-90 hover:opacity-100"
+          >
+            {part}
+          </a>
+        )
+      }
+
+      return (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline break-all opacity-90 hover:opacity-100"
+        >
+          {part}
+        </a>
+      )
+    })
+  }
+
+  // Any shared-reel link found in a message's text — used to show a rich
+  // preview card below the bubble, the same pattern as the pinned
+  // listing card above.
+  const getReelIdFromText = (msgText) => {
+    if (!msgText) return null
+    const urls = msgText.match(URL_REGEX) || []
+    for (const url of urls) {
+      const match = url.match(REEL_LINK_REGEX)
+      if (match) return match[1]
+    }
+    return null
+  }
 
   return (
     <div className="h-screen bg-black text-white flex flex-col lg:pl-60">
@@ -297,8 +394,43 @@ function ChatPage() {
                           ? "bg-teal-500 text-black rounded-br-sm"
                           : "bg-gray-800 text-white rounded-bl-sm"
                       }`}>
-                        <p className="text-sm leading-relaxed">{msg.text}</p>
+                        <p className="text-sm leading-relaxed">{renderMessageText(msg.text)}</p>
                       </div>
+                      {(() => {
+                        const sharedReelId = getReelIdFromText(msg.text)
+                        if (!sharedReelId) return null
+                        const preview = reelPreviews[sharedReelId]
+                        if (preview === "error") return null
+
+                        return (
+                          <button
+                            onClick={() => navigate(`/reel/${sharedReelId}`)}
+                            className="mt-1.5 flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl p-2 w-full max-w-[220px] text-left"
+                          >
+                            <div className="w-11 h-11 rounded-lg bg-teal-900 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              {preview?.thumbnail_url ? (
+                                <img src={preview.thumbnail_url} className="w-full h-full object-cover" />
+                              ) : (
+                                <Play size={16} className="text-teal-400" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              {preview ? (
+                                <>
+                                  <p className="text-xs font-medium truncate">
+                                    {preview.caption || "Shared reel"}
+                                  </p>
+                                  <p className="text-[11px] text-gray-500 truncate">
+                                    @{preview.owner_username}
+                                  </p>
+                                </>
+                              ) : (
+                                <div className="h-3 w-24 bg-white/10 rounded animate-pulse" />
+                              )}
+                            </div>
+                          </button>
+                        )
+                      })()}
                       <p className="text-xs text-gray-500 mt-1 px-1">
                         {formatTime(msg.created_at)}
                         {isMine && (
